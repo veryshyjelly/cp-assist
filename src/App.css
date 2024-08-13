@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+textarea {
+  color: white !important;
+  height: 100% !important;
+  font-size: 20px !important;
+  font-family: monospace !important;
+}
+
+input {
+  height: 100%;
+  color: white !important;
+  font-size: 18px !important;
+  font-family: monospace !important;
+}
+
+body {
+  user-select: none;
+}

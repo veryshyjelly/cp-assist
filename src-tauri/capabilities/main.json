@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-capability",
+  "description": "Capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "core:window:default",
+    "core:window:allow-start-dragging",
+    "core:window:deny-maximize",
+    "core:window:deny-toggle-maximize",
+    "core:window:allow-minimize",
+    "core:window:allow-close",
+    "core:window:allow-set-title",
+    "core:window:allow-set-size"
+  ]
+}
