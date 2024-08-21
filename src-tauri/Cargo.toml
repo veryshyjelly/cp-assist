@@ -23,6 +23,7 @@ tauri-plugin-dialog = "2.0.0-rc.0"
 strum = "0.26.3"
 strum_macros = "0.26.4"
 actix-web = "4.9.0"
+tauri-plugin-http = "2.0.0-rc.0"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2.0.0-rc.0"

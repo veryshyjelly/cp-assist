@@ -1,8 +1,7 @@
-use std::collections::HashMap;
-use super::language::Language;
 use crate::info::Problem;
 use crate::judge::Verdict;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fs::{create_dir_all, File};
 use std::io::{BufReader, Write};
 use std::ops::Deref;
@@ -10,21 +9,25 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Mutex;
 use tauri::{Manager, State};
+use crate::file_name;
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct AppState {
-    base_url: String,
-    directory: String,
+    pub self_url: String,
+    pub base_url: String,
+    pub directory: String,
     pub language_id: usize,
-    languages: Vec<Language>,
     #[serde(default)]
     pub language_dir: HashMap<usize, String>,
     #[serde(skip_serializing)]
     #[serde(default)]
-    problem: Problem,
+    pub problem: Problem,
     #[serde(skip_serializing)]
     #[serde(default)]
-    verdicts: Vec<Verdict>,
+    pub verdicts: Vec<Verdict>,
+    #[serde(skip_serializing)]
+    #[serde(default)]
+    pub verdict_token: HashMap<String, usize>,
 }
 
 impl AppState {
@@ -38,7 +41,9 @@ impl AppState {
             serde_json::from_reader(BufReader::new(File::open(file_path)?))?
         } else {
             let mut f = File::create(file_path)?;
-            let state = AppState::default();
+            let mut state = AppState::default();
+            state.self_url = "http://127.0.0.1:27121".into();
+            state.base_url = "http://127.0.0.1:2358".into();
             f.write_fmt(format_args!("{}", serde_json::to_string(&state)?))?;
             state
         };
@@ -95,4 +100,14 @@ pub fn save_state(
     .map_err(|err| format!("{}", err))?;
 
     Ok(())
+}
+
+#[tauri::command]
+pub fn create_sol_file(state: State<'_, Mutex<AppState>>) {
+    let state = state.lock().unwrap();
+    let mut file_path = PathBuf::from_str(&state.directory).unwrap();
+    file_path.push(state.language_dir.get(&state.language_id).unwrap_or("".into()));
+    create_dir_all(&file_path).unwrap();
+    file_path.push(file_name(&state.problem.title));
+    File::create(file_path).unwrap();
 }

@@ -11,8 +11,8 @@ pub struct Info {
     group: String,
     url: String,
     interactive: bool,
-    memory_limit: usize,
-    time_limit: usize,
+    memory_limit: usize, // mb
+    time_limit: usize,   // ms
     tests: Vec<Test>,
 }
 
@@ -24,10 +24,10 @@ pub struct Test {
 
 #[derive(Deserialize, Serialize, Clone, Default)]
 pub struct Problem {
-    title: String,
-    url: String,
-    memory_limit: usize,
-    time_limit: usize,
+    pub title: String,
+    pub url: String,
+    pub memory_limit: usize,
+    pub time_limit: usize,
 }
 
 impl Test {
@@ -61,12 +61,8 @@ impl Info {
 #[post("/")]
 pub async fn get_info(req_body: web::Json<Info>) -> impl Responder {
     // println!("{req_body:?}");
-    let window = WINDOW
-        .get()
-        .expect("window-is-unavailable");
-    window
-        .emit("set-problem", req_body.get_problem())
-        .unwrap();
+    let window = WINDOW.get().expect("window-is-unavailable");
+    window.emit("set-problem", req_body.get_problem()).unwrap();
     window
         .emit("set-verdicts", req_body.get_verdicts())
         .unwrap();

@@ -5,16 +5,18 @@ mod state;
 
 use actix_web::{App, HttpServer, Responder};
 use info::*;
+use judge::*;
+use language::*;
 use state::*;
 use std::sync::{Mutex, OnceLock};
 use tauri::{AppHandle, Manager, State, WebviewWindow};
 
 pub static WINDOW: OnceLock<WebviewWindow> = OnceLock::new();
 
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_http::init())
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
 
@@ -37,11 +39,15 @@ pub fn run() {
             let _ = show_window(app);
         }))
         .invoke_handler(tauri::generate_handler![
+            create_sol_file,
+            test,
             save_state,
             get_directory,
             set_directory,
+            get_languages,
             get_language,
             set_language,
+            set_language_dir,
             get_problem,
             set_problem,
             get_verdicts,
@@ -61,7 +67,19 @@ fn show_window(app: &AppHandle) {
         .expect("Can't Bring Window to Focus");
 }
 
-#[tauri::command]
-fn create_file(state: State<'_, Mutex<AppState>>) {
-
+pub fn file_name(title: &String) -> String {
+    let mut x: Vec<_> = title.split('.').collect();
+    x.split_off(1)
+        .join("")
+        .split(" ")
+        .map(|y| uppercase_first_letter(y))
+        .collect::<Vec<String>>()
+        .join("")
+}
+fn uppercase_first_letter(s: &str) -> String {
+    let mut c = s.chars();
+    match c.next() {
+        None => String::new(),
+        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+    }
 }

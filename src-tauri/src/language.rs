@@ -1,18 +1,26 @@
-use std::sync::Mutex;
-use serde::{Deserialize, Serialize};
-use serde::de::IntoDeserializer;
-use tauri::State;
 use crate::state::AppState;
+use serde::{Deserialize, Serialize};
+use std::sync::Mutex;
+use tauri::State;
+use tauri_plugin_http::reqwest;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Language {
     id: usize,
-    name: String
+    name: String,
 }
 
 #[tauri::command]
-pub async fn get_languages() -> Vec<Language> {
-    todo!()
+pub async fn get_languages(state: State<'_, Mutex<AppState>>) -> Result<Vec<Language>, String> {
+    let base_url = state.lock().unwrap().base_url.clone();
+    let res = reqwest::get(format!("{base_url}/languages/"))
+        .await
+        .map_err(|err| format!("{err}"))?
+        .text()
+        .await
+        .map_err(|err| format!("{err}"))?;
+    let languages = serde_json::from_str(&res).unwrap();
+    Ok(languages)
 }
 
 #[tauri::command]
