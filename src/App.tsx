@@ -2,36 +2,37 @@ import "./App.css";
 import {Box} from "@mantine/core";
 import TitleBar from "./Titlebar.tsx";
 import LandingPage from "./LandingPage.tsx";
-import {invoke} from "@tauri-apps/api/core";
 import {useEffect, useState} from "react";
-import {getCurrentWebviewWindow} from "@tauri-apps/api/webviewWindow";
-import {LogicalSize} from "@tauri-apps/api/window";
 import Home from "./Home.tsx";
-const appWindow = getCurrentWebviewWindow()
+import {Problem, Verdict} from "./Languages.ts";
+import {listen} from "@tauri-apps/api/event";
+import {get_directory, get_problem, get_verdicts, set_problem, set_verdicts} from "./commands.tsx";
 
 function App() {
-    const [directory, setDirectory] = useState("xyz");
+    const [directory, setDirectory] = useState("");
+    const [problem, setProblem] = useState<Problem | null>(null);
+    const [verdicts, setVerdicts] = useState<Verdict[]>([]);
 
     useEffect(() => {
-        invoke("get_directory")
-            .then((dir) => {
-                if (dir !== "")
-                    appWindow.setSize(new LogicalSize(1600, 900)).then(null);
-                setDirectory(dir as string);
-            })
-            .catch((e) => console.error(e));
-    });
+        get_directory().then(dir => setDirectory(dir));
+        get_problem().then(pro => setProblem(pro));
+        get_verdicts().then(ver => setVerdicts(ver || []))
+        listen<Problem>('set-problem', event =>
+            set_problem(event.payload).then(() => setProblem(event.payload)));
+        listen<Verdict[]>('set-verdicts', event =>
+            set_verdicts(event.payload).then(() => setVerdicts(event.payload)));
+    }, []);
 
-  return (
-      <Box
-          className="bg-[#1e1f22] border border-[#3c3f41]"
-          style={{ height: "100%", width: "100%", position: "fixed" }}
-      >
-        <TitleBar/>
-          {directory === "" && <LandingPage setDirectory={setDirectory}/>}
-          {directory !== "" && <Home/>}
-    </Box>
-  );
+    return (
+        <Box
+            className="bg-[#1e1f22] border border-[#3c3f41]"
+            style={{height: "100%", width: "100%", position: "fixed"}}
+        >
+            <TitleBar setDirectory={setDirectory} directory={directory}/>
+            {directory === "" && <LandingPage setDirectory={setDirectory}/>}
+            {directory !== "" && <Home problem={problem} verdicts={verdicts}/>}
+        </Box>
+    );
 }
 
 export default App;

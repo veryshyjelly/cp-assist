@@ -1,17 +1,20 @@
-export const Languages = [
-    { label: "C", value: "c" },
-    { label: "C++", value: "cpp" },
-    { label: "Dart", value: "dart" },
-    { label: "Elixir", value: "elixir" },
-    { label: "Fortran", value: "fortran" },
-    { label: "F#", value: "f#" },
-    { label: "Go", value: "go" },
-    { label: "Haskell", value: "haskell" },
-    { label: "Julia", value: "julia" },
-    { label: "Kotlin", value: "kotlin" },
-    { label: "OCaml", value: "ocaml" },
-    { label: "Python", value: "python" },
-    { label: "Rust", value: "rust" },
-    { label: "Swift", value: "swift" },
-    { label: "Zig", value: "zig" },
-];
+export type Language = {
+    id: number,
+    name: string
+}
+
+export type Verdict = {
+    input: string,
+    output: string,
+    answer: string,
+    status: string,
+    time: number,
+    memory: number
+}
+
+export type Problem = {
+    url: string,
+    memory_limit: number,
+    time_limit: number,
+    title: string,
+}

@@ -2,20 +2,31 @@ import {Center, Flex, Image, Select, Text} from "@mantine/core";
 import {getCurrentWindow} from "@tauri-apps/api/window";
 import {useEffect, useState} from "react";
 import {invoke} from "@tauri-apps/api/core";
-import {TauriEvent} from "@tauri-apps/api/event";
-import {Languages} from "./Languages.ts";
+import {get_language, get_languages, set_directory, set_language} from "./commands.tsx";
 
 const appWindow = getCurrentWindow()
 
-const TitleBar = () => {
+const TitleBar = ({directory, setDirectory}: { directory: string, setDirectory: (arg0: string) => void }) => {
     const [isFocused, setIsFocused] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [language, setLanguage] = useState("0");
+    const [languages, setLanguages] = useState<{ value: string, label: string }[]>([]);
+
+    const onChangeLanguage = async (value: string | null) => {
+        if (value === null) return;
+        let success = await set_language(parseInt(value));
+        if (success) setLanguage(value);
+    };
 
     useEffect(() => {
-        getCurrentWindow().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, () => {
-            invoke("save_state").then(() => {
-            }).catch(e => console.error(e));
+        getCurrentWindow().onCloseRequested(() => {
+            invoke("save_state").then(null).catch(e => console.error(e));
         });
+        get_language().then(v => setLanguage(v.toString()))
+        get_languages().then(v => setLanguages(v.map(x => {
+            return {value: x.id.toString(), label: x.name}
+        })))
+
         window.addEventListener("focus", () => setIsFocused(true));
         window.addEventListener("blur", () => setIsFocused(false));
     }, [])
@@ -25,62 +36,70 @@ const TitleBar = () => {
         <Flex h={40} data-tauri-drag-region
               style={{backgroundColor: isFocused ? "#2b2d30" : "#3c3f41"}}>
 
-            <Center h={33} w={33} mx={3} my={"auto"} className="rounded-full hover:bg-[#484b4d]">
-                <Image src="back.svg" h={25}/>
-            </Center>
-            <Center h={33} w={33} mx={3} my={"auto"} className="rounded-full hover:bg-[#484b4d]">
-                <Image src="refresh.svg" h={34}/>
-            </Center>
-
-            <Flex ml={"29%"} mr={"auto"}>
-                {loading &&
-                    <Center h={35} w={180} my={"auto"} mx={5}
-                            className="rounded-md bg-[#484b4d] cursor-pointer" onClick={() => {
-                        setLoading(false)
-                    }}>
-                        <Image src="pending.gif" h={60}/>
-                        <Text mx={10} c={"white"}>Running</Text>
+            {directory !== "" &&
+                <>
+                    <Center h={33} w={33} mx={3} my={"auto"} className="rounded-full hover:bg-[#484b4d] z-10"
+                            onClick={() => {
+                                set_directory("").then(() => setDirectory(""))
+                            }}>
+                        <Image src="back.svg" h={25}/>
                     </Center>
-                }
-                {!loading &&
-                    <>
-                        <Center h={35} w={80} my={"auto"} mx={5}
-                                className="bg-black/15 rounded-md hover:bg-[#484b4d] cursor-pointer" onClick={() => {
-                            setLoading(true)
-                        }}>
-                            <Image src="play.svg" h={25} ml={10}/>
-                            <Text mx={10} c={"white"}>Run</Text>
-                        </Center>
-                        <Center h={35} my={"auto"} w={115}
-                                className="bg-black/15 rounded-md hover:bg-[#484b4d] cursor-pointer" onClick={() => {
-                        }}>
-                            <Image src="submit.svg" h={25} ml={10}/>
-                            <Text mx={10} c={"#28c244"}>Submit</Text>
-                        </Center>
-                    </>}
-            </Flex>
 
-            <Center h={34} w={34} my={"auto"} mx={2} title={"Create File"}
-                    className="rounded-md hover:bg-[#484b4d] cursor-pointer" onClick={() => {
-            }}>
-                <Image src="create_file.svg" h={22}/>
-            </Center>
-            <Select
-                h={35}
-                w={130}
-                my={"auto"}
-                variant="light"
-                c={"white"}
-                defaultValue={"python"}
-                className={"bg-black/15 rounded-md"}
-                data={Languages}
-            />
+                    <Flex w={"100%"} h={40} pos={"absolute"} data-tauri-drag-region>
+                        <Flex my={"auto"} mx={"auto"}>
+                            {loading &&
+                                <Center h={35} w={180} my={"auto"} mx={5}
+                                        className="rounded-md bg-[#484b4d] cursor-pointer" onClick={() => {
+                                    setLoading(false)
+                                }}>
+                                    <Image src="pending.gif" h={60}/>
+                                    <Text mx={10} c={"white"}>Running</Text>
+                                </Center>
+                            }
+                            {!loading &&
+                                <>
+                                    <Center h={35} w={80} my={"auto"} mx={5}
+                                            className="bg-black/15 rounded-md hover:bg-[#484b4d] cursor-pointer"
+                                            onClick={() => {
+                                                setLoading(true)
+                                            }}>
+                                        <Image src="play.svg" h={25} ml={10}/>
+                                        <Text mx={10} c={"white"}>Run</Text>
+                                    </Center>
+                                    <Center h={35} my={"auto"} w={115}
+                                            className="bg-black/15 rounded-md hover:bg-[#484b4d] cursor-pointer"
+                                            onClick={() => {
+                                            }}>
+                                        <Image src="submit.svg" h={25} ml={10}/>
+                                        <Text mx={10} c={"#28c244"}>Submit</Text>
+                                    </Center>
+                                </>}
+                        </Flex>
+                    </Flex>
+                </>}
 
-            <Center h={40} w={36} className="rounded-md hover:bg-[#484b4d]" ml={20}>
-                <Image src="settings.svg" h={28}/>
-            </Center>
+            <Flex ml={"auto"}/>
 
-            <Flex ml={10}>
+            {directory !== "" &&
+                <>
+                    <Center h={34} w={34} my={"auto"} mx={2} title={"Create File"}
+                            className="rounded-md hover:bg-[#484b4d] cursor-pointer z-10" onClick={() => {
+                    }}>
+                        <Image src="create_file.svg" h={22}/>
+                    </Center>
+                    <Select h={35} w={130} my={"auto"}
+                            variant="light" c={"white"}
+                            defaultValue={"0"} data={languages} value={language}
+                            className={"bg-black/15 rounded-md z-10"}
+                            onChange={onChangeLanguage} allowDeselect={false}
+                    />
+
+                    <Center h={40} w={36} className="rounded-md hover:bg-[#484b4d]" ml={20}>
+                        <Image src="settings.svg" h={28}/>
+                    </Center>
+                </>}
+
+            <Flex ml={10} style={{zIndex: 3}}>
                 <Center h={40} w={36} className="hover:bg-[#484b4d]" onClick={() => appWindow.minimize()}>
                     <Image src="minimize.svg"/>
                 </Center>

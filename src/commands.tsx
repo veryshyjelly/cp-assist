@@ -1,266 +1,252 @@
-import { invoke } from '@tauri-apps/api/core'
-import { notifications } from '@mantine/notifications'
-import { IconCheck, IconX } from "@tabler/icons-react"
-import { confirm } from '@tauri-apps/plugin-dialog'
+import { invoke } from "@tauri-apps/api/core";
+import { notifications } from "@mantine/notifications";
+import { IconCheck, IconX } from "@tabler/icons-react";
+import {Language, Problem, Verdict} from "./Languages.ts";
 
 export const set_directory = async (directory: string) => {
     try {
-        let res = await invoke('set_directory', { directory: directory })
-        console.log(res)
-        notifications.show({
-            id: "directory_set",
-            message: "Directory set successfull",
-            icon: <IconCheck size="1.1rem" />,
-            autoClose: 1000,
-            color: "teal",
-        })
-    } catch (err) {
-        console.log(`error`, err);
+        await invoke("set_directory", { directory: directory });
+        return true;
+    } catch (e) {
+        console.log(e);
         notifications.show({
             id: "directory_not_set",
             title: "Directory not found",
             message: "The specified directory was not found",
             icon: <IconX size="1.1rem" />,
             color: "red",
-        })
+        });
         return false;
     }
-    return true;
-}
+};
 
-export const fetch_solved = async () => {
+export const get_directory = async () => {
     try {
-        await invoke('fetch_solved');
+        return await invoke("get_directory") as string;
+    } catch (e) {
+        console.error(e);
         notifications.show({
-            id: "solved_fetch",
-            message: "Solved problems fetched successfully",
-            icon: <IconCheck size="1.1rem" />,
-            autoClose: 1000,
-            color: "teal"
-        });
-    } catch (err) {
-        let create_confirm = await confirm('create solved.json?', { title: "File not found" });
-        if (create_confirm) {
-            return await create_solved();
-        }
-        return false;
-    }
-    return true;
-}
-
-export const create_solved = async () => {
-    try {
-        await invoke('create_solved');
-        notifications.show({
-            id: "solved_created",
-            message: "created solved.json file",
-        });
-    } catch (err) {
-        console.log(err)
-        notifications.show({
-            id: "solved_not_created",
-            message: "Failed to create solved.json file",
+            id: "cannot_get_directory",
+            message: "Cannot get the directory",
             icon: <IconX size="1.1rem" />,
-            color: "red"
+            color: "red",
         });
-
-        return false;
+        return "";
     }
-    return true;
-}
+};
 
-export const get_problemset = async () => {
+export const set_language = async (language_id: number) => {
     try {
-        let res = await invoke('get_problemset');
-        console.log(res);
+        await invoke("set_language", { language_id: language_id });
         notifications.show({
-            id: "problems_got",
-            message: "Problems fetched successfully",
+            id: "language_set",
+            message: "language set successfully",
             icon: <IconCheck size="1.1rem" />,
-            autoClose: 1000,
-            color: "teal"
+            color: "teal",
         });
-    } catch (err) {
-        console.log(`error`, err);
+        return true;
+    } catch (e) {
+        console.error(e);
         notifications.show({
-            id: "problems_not_got",
-            message: "Failed to fetch problems please check your internet connection",
+            id: "cannot_set_language",
+            message: e as string,
             icon: <IconX size="1.1rem" />,
-            color: "red"
+            color: "red",
         });
         return false;
     }
-    return true;
+};
+
+export const get_language = async () => {
+    try {
+        return (await invoke("get_language")) as number;
+    } catch (e) {
+        console.error(e);
+        notifications.show({
+            id: "cannot_get_language",
+            message: e as string,
+            icon: <IconX size="1.1rem" />,
+            color: "red",
+        });
+        return 0;
+    }
+};
+
+export const get_languages = async () => {
+    try {
+        return (await invoke("get_languages")) as Language[];
+    } catch (e) {
+        console.error(e);
+        notifications.show({
+            id: "cannot_get_languages",
+            message: e as string,
+            icon: <IconX size="1.1rem" />,
+            color: "red",
+        });
+        return [];
+    }
 }
 
-export const set_rating = async (rating: [number, number], tags: string[]) => {
+export const set_problem = async (problem: Problem) => {
     try {
-        await invoke('set_rating', { min: rating[0], max: rating[1] })
-        await invoke('set_tags', { tags: tags })
+        await invoke("set_problem", { problem: problem });
         notifications.show({
-            id: "ratings_set",
-            message: "Filters set successfull",
+            id: "problem_set",
+            message: "problem set",
             icon: <IconCheck size="1.1rem" />,
-            autoClose: 1000,
-            color: "teal"
+            color: "teal",
         });
-    } catch (err) {
-        console.log('error while setting filter');
+        return true;
+    } catch (e) {
+        console.error(e);
         notifications.show({
-            id: "rating_not_set",
-            message: "Error encountered while setting filters",
+            id: "cannot_set_problem",
+            message: e as string,
             icon: <IconX size="1.1rem" />,
-            color: "red"
+            color: "red",
         });
         return false;
     }
-    return true;
-}
+};
 
 export const get_problem = async () => {
     try {
-        let res = await invoke('get_problem');
-        return res;
-    } catch (err) {
+        return (await invoke("get_problem")) as Problem;
+    } catch (e) {
+        console.error(e);
         notifications.show({
-            id: "problem_not_got",
-            message: "Error while getting problem",
+            id: "cannot_get_problem",
+            message: e as string,
             icon: <IconX size="1.1rem" />,
-            color: "red"
+            color: "red",
         });
+        return null;
     }
-}
+};
 
-export const next_problem = async () => {
+export const set_verdicts = async (verdicts: Verdict[]) => {
     try {
-        await invoke('next_problem');
-    } catch (err) {
+        await invoke("set_verdicts", { verdicts: verdicts });
         notifications.show({
-            id: "no_next",
-            message: "No next problem",
-            icon: <IconX size="1.1rem" />,
-            color: "red"
+            id: "verdicts_set",
+            message: "verdicts set",
+            icon: <IconCheck size="1.1rem" />,
+            color: "teal",
         });
-    }
-}
-
-export const prev_problem = async () => {
-    try {
-        await invoke('prev_problem');
-    } catch (err) {
+        return true;
+    } catch (e) {
+        console.error(e);
         notifications.show({
-            id: "no_prev",
-            message: "No prev problem",
+            id: "cannot_set_verdicts",
+            message: e as string,
             icon: <IconX size="1.1rem" />,
-            color: "red"
-        });
-    }
-}
-
-export const sort_problems = async (sorting: string) => {
-    try {
-        await invoke('sort_problems', { sortBy: sorting });
-    } catch (err) {
-        console.log(err)
-        notifications.show({
-            id: "no_sort",
-            message: "Cannot sort problems",
-            icon: <IconX size="1.1rem" />,
-            color: "red"
+            color: "red",
         });
         return false;
     }
-    return true;
-}
+};
 
-export const get_testcases = async (contest_id: number, index: string) => {
-    let res;
+export const get_verdicts = async () => {
     try {
-        res = await invoke('get_testcase', { contestId: contest_id, index: index })
+        return (await invoke("get_verdicts")) as Verdict[];
     } catch (e) {
-        console.log(`error ${e}`)
-        try {
-            res = await invoke('fetch_testcase', { contestId: contest_id, index: index })
-        } catch (err) {
-            console.log(`error ${err}`)
-            notifications.show({
-                id: "no_testcase",
-                message: "Cannot get testcase",
-                icon: <IconX size="1.1rem" />,
-                color: "red"
-            });
-        }
-    }
-    return res;
-}
-
-export const problem_solved = async () => {
-    try {
-        await invoke('problem_solved');
-    } catch {
+        console.error(e);
         notifications.show({
-            id: "not_solved",
-            message: "Error ocurred while saving solved status",
+            id: "cannot_get_verdicts",
+            message: e as string,
             icon: <IconX size="1.1rem" />,
-            color: "red"
+            color: "red",
         });
+        return null;
     }
-}
+};
 
-export const set_hide_solved = async (value: boolean) => {
+export const run = async () => {
     try {
-        await invoke('set_hide_solved', { value: value })
-    } catch (err) {
-        console.log(err);
+        return (await invoke("run")) as Verdict[];
+    } catch (e) {
+        console.error(e);
         notifications.show({
-            id: "hide_not_set",
-            message: "Error ocurred while setting hide solved",
+            id: "cannot_run",
+            message: e as string,
             icon: <IconX size="1.1rem" />,
-            color: "red"
+            color: "red",
         });
+        return null;
     }
-}
+};
+
+export const submit = async () => {
+    try {
+        return (await invoke("submit")) as Verdict[];
+    } catch (e) {
+        console.error(e);
+        notifications.show({
+            id: "cannot_submit",
+            message: e as string,
+            icon: <IconX size="1.1rem" />,
+            color: "red",
+        });
+        return null;
+    }
+};
 
 export const create_file = async () => {
     try {
-        await invoke('create_file');
-    } catch (err) {
-        console.log(err);
+        await invoke("create_file");
         notifications.show({
-            id: "file_not_create",
-            message: "Error while creating solution file",
-            icon: <IconX size="1.1rem" />,
-            color: "red"
+            id: "file_created",
+            message: "file created",
+            icon: <IconCheck size="1.1rem" />,
+            color: "teal",
         });
+        return true;
+    } catch (e) {
+        console.error(e);
+        notifications.show({
+            id: "cannot_create_file",
+            message: e as string,
+            icon: <IconX size="1.1rem" />,
+            color: "red",
+        });
+        return false;
     }
-}
+};
 
-export const open_link = async () => {
+export const open_file = async () => {
     try {
-        await invoke('open_link');
-    } catch (err) {
-        console.log(err);
+        await invoke("open_file");
         notifications.show({
-            id: "link_not_open",
-            message: "Error while opening link",
-            icon: <IconX size="1.1rem" />,
-            color: "red"
+            id: "file_opened",
+            message: "file opened in editor",
+            icon: <IconCheck size="1.1rem" />,
+            color: "teal",
         });
+        return true;
+    } catch (e) {
+        console.error(e);
+        notifications.show({
+            id: "cannot_open_file",
+            message: e as string,
+            icon: <IconX size="1.1rem" />,
+            color: "red",
+        });
+        return false;
     }
-}
+};
 
-export const judge = async () => {
-    let res;
+export const save_state = async () => {
     try {
-        res = await invoke('judge');
-    } catch (err) {
-        console.log(err);
+        await invoke("save_state");
+        return true;
+    } catch (e) {
+        console.error(e);
         notifications.show({
-            id: "file_not_judged",
-            message: "Error while testing solution",
+            id: "cannot_save_state",
+            message: e as string,
             icon: <IconX size="1.1rem" />,
-            color: "red"
+            color: "red",
         });
+        return false;
     }
-    return res;
-}
+};
