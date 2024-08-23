@@ -33,7 +33,7 @@ pub struct Problem {
 impl Test {
     pub fn get_verdict(&self) -> Verdict {
         Verdict {
-            answer: self.output.clone().split_off(2),
+            answer: self.output.clone(),
             input: self.input.clone(),
             output: "".into(),
             memory: 0,
@@ -60,7 +60,6 @@ impl Info {
 
 #[post("/")]
 pub async fn get_info(req_body: web::Json<Info>) -> impl Responder {
-    // println!("{req_body:?}");
     let window = WINDOW.get().expect("window-is-unavailable");
     window.emit("set-problem", req_body.get_problem()).unwrap();
     window

@@ -37,7 +37,7 @@ export const get_directory = async () => {
 
 export const set_language = async (language_id: number) => {
     try {
-        await invoke("set_language", { language_id: language_id });
+        await invoke("set_language", { languageId: language_id });
         notifications.show({
             id: "language_set",
             message: "language set successfully",
@@ -163,7 +163,7 @@ export const get_verdicts = async () => {
 
 export const run = async () => {
     try {
-        return (await invoke("run")) as Verdict[];
+        return (await invoke("test")) as null;
     } catch (e) {
         console.error(e);
         notifications.show({

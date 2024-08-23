@@ -7,10 +7,9 @@ import {Problem, Verdict} from "./Languages.ts";
 const appWindow = getCurrentWebviewWindow()
 
 const MyTextarea = ({title, value, mx}: { title: string, value: string, mx: number | string | undefined }) => {
-    return <Box h={"90%"}
-                className={`w-[31%] font-[500] bg-[#282828]
-                        text-3xl border border-gray-600 relative text-center select-none font-mono
-                         rounded-md tracking-widest pt-1`}
+    return <Box h={"90%"} w={"31%"} fw={500} bg={"#282828"}
+                className={`text-3xl border border-gray-600 relative text-center select-none font-mono
+                            rounded-md tracking-widest pt-1`}
                 mx={mx}
     >
         {title}
@@ -33,25 +32,10 @@ const Home = ({problem, verdicts}: {problem: Problem|null, verdicts: Verdict[]})
 
     return (problem?.title ? <Stack h={"95%"}>
         <Flex className={"mt-5 justify-center content-center"}>
-            {/*<Center*/}
-            {/*    onClick={() => {*/}
-            {/*    }}*/}
-            {/*    className="p-3 rounded-xl hover:bg-[#484b4d] active:drop-shadow-2xl border border-gray-500 cursor-pointer"*/}
-            {/*>*/}
-            {/*    <Image src={"/prev.svg"} w={15} h={15}/>*/}
-            {/*</Center>*/}
-
             <Text w={500} fz={32} fw={600} c={"white"}
                   className={"select-none tracking-widest cursor-pointer text-center"}>
                 {problem?.title}
             </Text>
-            {/*<Center*/}
-            {/*    onClick={() => {*/}
-            {/*    }}*/}
-            {/*    className="p-3 rounded-xl hover:bg-[#484b4d] active:drop-shadow-2xl border border-gray-500 cursor-pointer"*/}
-            {/*>*/}
-            {/*    <Image src={"/next.svg"} w={15} h={15}/>*/}
-            {/*</Center>*/}
         </Flex>
 
         <Stack c={"white"} w={"95%"} mt={"10"} mx={"auto"} px={40} className={"text-2xl h-full rounded-md"}>

@@ -2,15 +2,20 @@ use crate::file_name;
 use crate::state::AppState;
 use actix_web::{put, web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Mutex;
+use serde_with::{serde_as, DefaultOnNull};
 use tauri::State;
 use tauri_plugin_http::reqwest;
+use crate::language::get_extension;
 
+#[serde_as]
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
+#[serde(default)]
 pub struct Submission {
     source_code: String,
     language_id: usize,
@@ -23,12 +28,18 @@ pub struct Submission {
     redirect_stderr_to_stdout: bool,
     enable_network: bool,
     callback_url: String,
+    #[serde_as(deserialize_as = "DefaultOnNull")]
     stdout: String,
+    #[serde_as(deserialize_as = "DefaultOnNull")]
     stderr: String,
+    #[serde_as(deserialize_as = "DefaultOnNull")]
     compile_output: String,
+    #[serde_as(deserialize_as = "DefaultOnNull")]
     message: String,
     exit_code: usize,
+    #[serde_as(deserialize_as = "DefaultOnNull")]
     time: String,
+    #[serde_as(deserialize_as = "DefaultOnNull")]
     memory: usize,
     token: String,
 }
@@ -44,11 +55,17 @@ pub struct Verdict {
 }
 
 #[tauri::command]
-pub async fn test(state: State<'_, Mutex<AppState>>) -> Result<(), String> {
-    let state = state.lock().unwrap();
+pub async fn test(app_state: State<'_, Mutex<AppState>>) -> Result<(), String> {
+    let state = app_state.lock().unwrap().clone();
     let mut file_path = PathBuf::from_str(&state.directory).unwrap();
-    file_path.push(state.language_dir.get(&state.language_id).unwrap_or("".into()));
+    file_path.push(
+        state
+            .language_dir
+            .get(&state.language_id)
+            .unwrap_or(&"".into()),
+    );
     file_path.push(file_name(&state.problem.title));
+    file_path.set_extension(get_extension(app_state.clone()).await?);
 
     let mut submission = Submission::default();
 
@@ -58,13 +75,16 @@ pub async fn test(state: State<'_, Mutex<AppState>>) -> Result<(), String> {
         .map_err(|err| format!("{err}"))?;
 
     submission.language_id = state.language_id;
-    submission.callback_url = state.self_url.clone();
+    // this doesn't seem to be working, need to do polling ;/
+    submission.callback_url = state.self_url.clone()+"/";
     submission.cpu_time_limit = state.problem.time_limit as f32 / 1000.0;
     submission.memory_limit = state.problem.memory_limit * 1024;
 
+    let verdicts = state.verdicts.clone();
     let client = reqwest::Client::builder().build().unwrap();
     let base_url = state.base_url.clone();
-    for (i, v) in state.verdicts.iter().enumerate() {
+    let mut verdict_token = HashMap::new();
+    for (i, v) in verdicts.into_iter().enumerate() {
         submission.stdin = v.input.clone();
         submission.expected_output = v.answer.clone();
         let post_request = client
@@ -74,15 +94,26 @@ pub async fn test(state: State<'_, Mutex<AppState>>) -> Result<(), String> {
             .json(&submission)
             .build()
             .unwrap();
-        let response: Submission = serde_json::from_str(&client.execute(post_request).await.unwrap().text().await.unwrap()).unwrap();
-        state.verdict_token.insert(response.token, i);
+        let response: Submission = serde_json::from_str(
+            &client
+                .execute(post_request)
+                .await
+                .unwrap()
+                .text()
+                .await
+                .unwrap(),
+        )
+        .unwrap();
+        println!("{}", response.token);
+        verdict_token.insert(response.token, i);
     }
+    app_state.lock().unwrap().verdict_token = verdict_token;
 
     Ok(())
 }
 
 #[put("/")]
-pub async fn put_verdict(data: web::Data<Submission>) -> impl Responder {
+pub async fn put_verdict(data: web::Json<Submission>) -> impl Responder {
     println!("{data:?}");
     HttpResponse::Ok()
 }

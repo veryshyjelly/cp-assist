@@ -3,13 +3,13 @@ mod judge;
 mod language;
 mod state;
 
-use actix_web::{App, HttpServer, Responder};
+use actix_web::{App, HttpServer};
 use info::*;
 use judge::*;
 use language::*;
 use state::*;
 use std::sync::{Mutex, OnceLock};
-use tauri::{AppHandle, Manager, State, WebviewWindow};
+use tauri::{AppHandle, Manager, WebviewWindow};
 
 pub static WINDOW: OnceLock<WebviewWindow> = OnceLock::new();
 
@@ -23,7 +23,7 @@ pub fn run() {
             _ = WINDOW.set(window);
 
             tauri::async_runtime::spawn(
-                HttpServer::new(|| App::new().service(get_info))
+                HttpServer::new(|| App::new().service(get_info).service(put_verdict))
                     .bind(("127.0.0.1", 27121))?
                     .run(),
             );
@@ -39,7 +39,8 @@ pub fn run() {
             let _ = show_window(app);
         }))
         .invoke_handler(tauri::generate_handler![
-            create_sol_file,
+            create_file,
+            get_extension,
             test,
             save_state,
             get_directory,
