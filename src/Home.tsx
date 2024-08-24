@@ -32,7 +32,7 @@ const Home = ({problem, verdicts}: {problem: Problem|null, verdicts: Verdict[]})
     return (problem?.title ? <Stack h={"95%"}>
         <Flex className={"mt-5 justify-center content-center"}>
             <Text w={500} fz={32} fw={600} c={"white"}
-                  className={"select-none tracking-widest cursor-pointer text-center"}>
+                  className={"select-none tracking-widest text-center"}>
                 {problem?.title}
             </Text>
         </Flex>
@@ -62,6 +62,10 @@ const Home = ({problem, verdicts}: {problem: Problem|null, verdicts: Verdict[]})
                 >
                     {verdicts[caseIndex]?.status}
                 </Text>
+                {verdicts[caseIndex]?.time && <>
+                    <Text ff={"monospace"} c={"#fcfcfc"} fz={20}>{verdicts[caseIndex]?.time*1000 + " ms"}</Text>
+                    <Text ff={"monospace"} c={"#fcfcfc"} fz={20}>{Math.floor(verdicts[caseIndex]?.memory/1024) + " Mb"}</Text>
+                </>}
             </Group>
 
             <Group h={"90%"} w={"100%"}>

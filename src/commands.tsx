@@ -171,6 +171,37 @@ export const set_verdicts = async (verdicts: Verdict[]) => {
     }
 };
 
+export const get_base_url = async () => {
+    try {
+        return (await invoke("get_base_url")) as string;
+    } catch (e) {
+        console.error(e);
+        notifications.show({
+            id: "cannot_get_problem",
+            message: e as string,
+            icon: <IconX size="1.1rem" />,
+            color: "red",
+        });
+        return "";
+    }
+};
+
+export const set_base_url = async (url: string) => {
+    try {
+        await invoke("set_base_url", { url: url });
+        return true;
+    } catch (e) {
+        console.error(e);
+        notifications.show({
+            id: "cannot_set_base_url",
+            message: e as string,
+            icon: <IconX size="1.1rem" />,
+            color: "red",
+        });
+        return false;
+    }
+};
+
 export const get_verdicts = async () => {
     try {
         return (await invoke("get_verdicts")) as Verdict[];

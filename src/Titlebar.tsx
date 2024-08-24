@@ -75,13 +75,13 @@ const TitleBar = ({directory, setDirectory, open}: { directory: string, setDirec
                                         <Image src="play.svg" h={25} ml={10}/>
                                         <Text mx={10} c={"white"}>Run</Text>
                                     </Center>
-                                    <Center h={35} my={"auto"} w={115}
-                                            className="bg-black/15 rounded-md hover:bg-[#484b4d] cursor-pointer"
-                                            onClick={() => {
-                                            }}>
-                                        <Image src="submit.svg" h={25} ml={10}/>
-                                        <Text mx={10} c={"#28c244"}>Submit</Text>
-                                    </Center>
+                                    {/*<Center h={35} my={"auto"} w={115}*/}
+                                    {/*        className="bg-black/15 rounded-md hover:bg-[#484b4d] cursor-pointer"*/}
+                                    {/*        onClick={() => {*/}
+                                    {/*        }}>*/}
+                                    {/*    <Image src="submit.svg" h={25} ml={10}/>*/}
+                                    {/*    <Text mx={10} c={"#28c244"}>Submit</Text>*/}
+                                    {/*</Center>*/}
                                 </>}
                         </Flex>
                     </Flex>

@@ -53,7 +53,9 @@ pub fn run() {
             get_problem,
             set_problem,
             get_verdicts,
-            set_verdicts
+            set_verdicts,
+            get_base_url,
+            set_base_url
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

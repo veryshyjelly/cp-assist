@@ -5,7 +5,7 @@ use crate::language::get_extension;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::{create_dir_all, File};
-use std::io::{BufReader, Write};
+use std::io::{BufReader, Read, Write};
 use std::ops::Deref;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -79,6 +79,16 @@ pub fn set_verdicts(verdicts: Vec<Verdict>, state: State<'_, Mutex<AppState>>) {
 }
 
 #[tauri::command]
+pub fn get_base_url(state: State<'_, Mutex<AppState>>) -> String {
+    state.lock().unwrap().base_url.clone()
+}
+
+#[tauri::command]
+pub fn set_base_url(url: String, state: State<'_, Mutex<AppState>>) {
+    state.lock().unwrap().base_url = url
+}
+
+#[tauri::command]
 pub fn save_state(
     handle: tauri::AppHandle,
     state: State<'_, Mutex<AppState>>,
@@ -102,6 +112,8 @@ pub fn save_state(
 pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), String> {
     let state = app_state.lock().unwrap().clone();
     let mut file_path = PathBuf::from_str(&state.directory).unwrap();
+    let mut template_path = file_path.clone();
+    template_path.push("template");
     file_path.push(
         state
             .language_dir
@@ -111,7 +123,17 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
     create_dir_all(&file_path).map_err(|err| format!("{err}"))?;
     file_path.push(file_name(&state.problem.title));
     file_path.set_extension(get_extension(app_state.clone()).await?);
+    template_path.set_extension(get_extension(app_state.clone()).await?);
     println!("creating file: {:?}", file_path);
-    File::create_new(file_path).map_err(|err| format!("{err}"))?;
+    let mut f = File::create_new(file_path).map_err(|err| format!("{err}"))?;
+    
+    f.write_fmt(format_args!("{}\n", state.problem.url)).map_err(|err| format!("{err}"))?;
+    
+    if template_path.exists() {
+        let mut template = String::new();
+        File::open(template_path).unwrap().read_to_string(&mut template).map_err(|err| format!("{err}"))?;
+        f.write_fmt(format_args!("{}", template)).map_err(|err| format!("{err}"))?;
+    }
+    
     Ok(())
 }
