@@ -43,14 +43,17 @@ pub fn set_language(language_id: usize, state: State<'_, Mutex<AppState>>) {
 }
 
 #[tauri::command]
+pub fn get_language_dir(language_id: usize, state: State<'_, Mutex<AppState>>) -> Result<String, String> {
+    Ok(state.lock().unwrap().language_dir.get(&language_id).ok_or("language not found")?.clone())
+}
+
+#[tauri::command]
 pub fn set_language_dir(language_id: usize, dir: String, state: State<'_, Mutex<AppState>>) {
     state.lock().unwrap().language_dir.insert(language_id, dir);
 }
 
 #[tauri::command]
-pub async fn get_extension(
-    state: State<'_, Mutex<AppState>>,
-) -> Result<String, String> {
+pub async fn get_extension(state: State<'_, Mutex<AppState>>) -> Result<String, String> {
     let base_url = state.lock().unwrap().base_url.clone();
     let language_id = state.lock().unwrap().language_id;
     let res = reqwest::get(format!("{base_url}/languages/{language_id}"))
@@ -60,7 +63,8 @@ pub async fn get_extension(
         .await
         .map_err(|err| format!("{err}"))?;
 
-    let language: Language = serde_json::from_str(&res).map_err(|err| format!("cannot parse language info: {err}"))?;
+    let language: Language =
+        serde_json::from_str(&res).map_err(|err| format!("cannot parse language info: {err}"))?;
 
     Ok(language.source_file.split('.').last().unwrap().into())
 }

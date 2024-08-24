@@ -24,7 +24,6 @@ const MyTextarea = ({title, value, mx}: { title: string, value: string, mx: numb
 
 const Home = ({problem, verdicts}: {problem: Problem|null, verdicts: Verdict[]}) => {
     let [caseIndex, setCaseIndex] = useState(0);
-    let [finalVerdict, _setFinalVerdict] = useState("Run Code" as string);
 
     useEffect(() => {
         appWindow.setSize(new LogicalSize(1000, 650)).then(null);
@@ -47,7 +46,7 @@ const Home = ({problem, verdicts}: {problem: Problem|null, verdicts: Verdict[]})
                     data={Array.from(Array(verdicts.length).keys()).map((x) => ({
                         label:
                             `Case ${x + 1} ` +
-                            (verdicts[x]?.status === "AC" ? "✔️" : verdicts[x]?.status === "NA" ? "😶" : "❌"),
+                            (verdicts[x]?.status_id === 3 ? "✔️" : verdicts[x]?.status_id < 3 ? "😶" : "❌"),
                         value: `${x + 1}`,
                     }))}
                     w={150} pl={10} py={4} bg={"#2b2d30"}
@@ -58,10 +57,10 @@ const Home = ({problem, verdicts}: {problem: Problem|null, verdicts: Verdict[]})
                 />
                 <Text fz={26} fw={600} ml={"md"} my={"auto"} ff={"monospace"} className={"tracking-wider"}
                       style={{
-                          color: finalVerdict === "Accepted" ? "#2cad40" : finalVerdict === "Wrong Answer" ? "red" : "gray",
+                          color: verdicts[caseIndex]?.status_id === 3 ? "#2cad40" : verdicts[caseIndex]?.status_id < 3 ? "gray" : "red",
                       }}
                 >
-                    {finalVerdict}
+                    {verdicts[caseIndex]?.status}
                 </Text>
             </Group>
 

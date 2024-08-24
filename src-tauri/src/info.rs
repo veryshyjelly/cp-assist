@@ -36,8 +36,9 @@ impl Test {
             answer: self.output.clone(),
             input: self.input.clone(),
             output: "".into(),
-            memory: 0,
-            time: 0,
+            memory: 0.0,
+            time: "".into(),
+            status_id: 0,
             status: "NA".into(),
         }
     }

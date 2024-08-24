@@ -7,7 +7,7 @@ import {IconCheck} from "@tabler/icons-react";
 
 const appWindow = getCurrentWindow()
 
-const TitleBar = ({directory, setDirectory}: { directory: string, setDirectory: (arg0: string) => void }) => {
+const TitleBar = ({directory, setDirectory, open}: { directory: string, setDirectory: (arg0: string) => void , open: () => void}) => {
     const [isFocused, setIsFocused] = useState(true);
     const [loading, setLoading] = useState(false);
     const [language, setLanguage] = useState("0");
@@ -96,18 +96,19 @@ const TitleBar = ({directory, setDirectory}: { directory: string, setDirectory: 
                         <Image src="create_file.svg" h={22}/>
                     </Center>
 
-                    <Select h={35} my={"auto"} w={"16%"}
+                    <Select h={35} my={"auto"} w={160}
                             variant="light" c={"white"}
                             defaultValue={"0"} data={trimmedLanguages} value={language}
                             className={"bg-black/15 rounded-md z-10"}
                             onChange={onChangeLanguage} allowDeselect={false}
                             comboboxProps={{width: 250}}
                             renderOption={({option, checked}) => <Group>
-                                {languageFromId(option.value)} {checked &&
+                               <Text fz={18} fw={"500"} className={"tracking-wider"}>{languageFromId(option.value)}</Text>  {checked &&
                                 <IconCheck style={{marginInlineStart: 'auto'}}/>} </Group>}
                     />
 
-                    <Center h={40} w={36} className="rounded-md hover:bg-[#484b4d]" ml={20}>
+                    <Center h={40} w={36} className="rounded-md hover:bg-[#484b4d] z-10" ml={20}
+                        onClick={() => open()}>
                         <Image src="settings.svg" h={28}/>
                     </Center>
                 </>}

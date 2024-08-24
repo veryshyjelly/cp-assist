@@ -57,6 +57,43 @@ export const set_language = async (language_id: number) => {
     }
 };
 
+export const get_language_dir = async (language_id: number) => {
+    try {
+        return await invoke("get_language_dir", { languageId: language_id }) as string;
+    } catch (e) {
+        console.error(e);
+        notifications.show({
+            id: "cannot_get_language_dir",
+            message: e as string,
+            icon: <IconX size="1.1rem" />,
+            color: "red",
+        });
+        return "";
+    }
+};
+
+export const set_language_dir = async (language_id: number, dir: string) => {
+    try {
+        await invoke("set_language_dir", { languageId: language_id, dir: dir });
+        notifications.show({
+            id: "language_set",
+            message: "language dir set successfully",
+            icon: <IconCheck size="1.1rem" />,
+            color: "teal",
+        });
+        return true
+    } catch (e) {
+        console.error(e);
+        notifications.show({
+            id: "cannot_set_language_dir",
+            message: e as string,
+            icon: <IconX size="1.1rem" />,
+            color: "red",
+        });
+        return false;
+    }
+};
+
 export const get_language = async () => {
     try {
         return (await invoke("get_language")) as number;
@@ -90,12 +127,6 @@ export const get_languages = async () => {
 export const set_problem = async (problem: Problem) => {
     try {
         await invoke("set_problem", { problem: problem });
-        notifications.show({
-            id: "problem_set",
-            message: "problem set",
-            icon: <IconCheck size="1.1rem" />,
-            color: "teal",
-        });
         return true;
     } catch (e) {
         console.error(e);
@@ -127,12 +158,6 @@ export const get_problem = async () => {
 export const set_verdicts = async (verdicts: Verdict[]) => {
     try {
         await invoke("set_verdicts", { verdicts: verdicts });
-        notifications.show({
-            id: "verdicts_set",
-            message: "verdicts set",
-            icon: <IconCheck size="1.1rem" />,
-            color: "teal",
-        });
         return true;
     } catch (e) {
         console.error(e);

@@ -8,6 +8,7 @@ export type Verdict = {
     output: string,
     answer: string,
     status: string,
+    status_id: number,
     time: number,
     memory: number
 }

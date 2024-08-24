@@ -23,7 +23,7 @@ pub fn run() {
             _ = WINDOW.set(window);
 
             tauri::async_runtime::spawn(
-                HttpServer::new(|| App::new().service(get_info).service(put_verdict))
+                HttpServer::new(|| App::new().service(get_info))
                     .bind(("127.0.0.1", 27121))?
                     .run(),
             );
@@ -48,6 +48,7 @@ pub fn run() {
             get_languages,
             get_language,
             set_language,
+            get_language_dir,
             set_language_dir,
             get_problem,
             set_problem,

@@ -1,6 +1,7 @@
 use crate::file_name;
 use crate::info::Problem;
 use crate::judge::Verdict;
+use crate::language::get_extension;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::{create_dir_all, File};
@@ -10,7 +11,6 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Mutex;
 use tauri::{Manager, State};
-use crate::language::get_extension;
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct AppState {
@@ -24,8 +24,6 @@ pub struct AppState {
     pub problem: Problem,
     #[serde(default, skip_serializing)]
     pub verdicts: Vec<Verdict>,
-    #[serde(default, skip_serializing)]
-    pub verdict_token: HashMap<String, usize>,
 }
 
 impl AppState {
@@ -40,7 +38,7 @@ impl AppState {
         } else {
             let mut f = File::create(file_path)?;
             let mut state = AppState::default();
-            state.self_url = "http://host.docker.internal:27121".into();
+            state.self_url = "http://127.0.0.1:27121".into();
             state.base_url = "http://127.0.0.1:2358".into();
             f.write_fmt(format_args!("{}", serde_json::to_string(&state)?))?;
             state
@@ -101,7 +99,7 @@ pub fn save_state(
 }
 
 #[tauri::command]
-pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), String>{
+pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), String> {
     let state = app_state.lock().unwrap().clone();
     let mut file_path = PathBuf::from_str(&state.directory).unwrap();
     file_path.push(
