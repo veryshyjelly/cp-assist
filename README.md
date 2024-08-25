@@ -31,4 +31,5 @@
     - red-hat: [.rpm file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.1-alpha/cp-assist-0.1.1-1.x86_64.rpm)
 
 - Windows:
-    - msi installer: soon
+    - msi installer: [msi](https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.1-alpha/cp-assist_0.1.1_x64_en-US.msi)
+    - setup exe: [exe](https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.1-alpha/cp-assist_0.1.1_x64-setup.exe)
