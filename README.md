@@ -7,7 +7,20 @@
 - Prerequisites:
     - competitive-companion [link](https://github.com/jmerle/competitive-companion)
     - judge0 installation (local or remote)
-
+        1. install docker and docker-compose
+        2. Download and extract the release archive:
+        ```
+            wget https://github.com/veryshyjelly/judge0/releases/download/v69/judge0.zip
+            unzip judge0.zip
+            cd judge0
+        ```
+        3. Add password for `POSTGRES_PASSWORD` and `REDIS_PASSWORD` in `judge0.conf` file
+        4. Run all services and wait a few seconds until everything is initialized:
+        ```
+            docker-compose up -d db redis
+            docker-compose up -d
+        ```
+        
 - Linux:
     - arch linux:
     ```
