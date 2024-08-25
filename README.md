@@ -3,6 +3,8 @@
 ## App preview
 ![alt text](https://github.com/veryshyjelly/cp-assist/blob/main/cp-assist-shot.png?raw=true)
 
+![alt text](https://github.com/veryshyjelly/cp-assist/blob/main/cp-assist-cast.webm?raw=true)
+
 ## Installation
 - Prerequisites:
     - competitive-companion [link](https://github.com/jmerle/competitive-companion)
