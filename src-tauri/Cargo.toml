@@ -1,14 +1,14 @@
 [package]
-name = "cf"
-version = "0.0.0"
-description = "A Tauri App"
+name = "cp"
+version = "0.1.1"
+description = "A Competitive Programming assistant"
 authors = ["you"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "cf_lib"
+name = "cp_lib"
 crate-type = ["lib", "cdylib", "staticlib"]
 
 [build-dependencies]

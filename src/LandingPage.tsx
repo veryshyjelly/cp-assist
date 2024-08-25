@@ -28,7 +28,7 @@ const LandingPage = ({setDirectory}: { setDirectory: React.Dispatch<React.SetSta
     return (
         <Flex direction={"column"} align={"center"} style={{userSelect: "none"}}>
             <Text c={"#dee0e2"} fw={500} mt={50} fz={40}>
-                Welcome to CF-Assist
+                Welcome to CP-Assist
             </Text>
             <Space h={"md"}/>
             <Text c={"#6f737a"} fz={"md"}>

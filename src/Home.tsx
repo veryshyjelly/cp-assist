@@ -24,6 +24,7 @@ const MyTextarea = ({title, value, mx}: { title: string, value: string, mx: numb
 
 const Home = ({problem, verdicts}: {problem: Problem|null, verdicts: Verdict[]}) => {
     let [caseIndex, setCaseIndex] = useState(0);
+    const otherVerdict = verdicts.filter(v => v.status_id !== 3)[0] || verdicts[caseIndex];
 
     useEffect(() => {
         appWindow.setSize(new LogicalSize(1000, 650)).then(null);
@@ -55,17 +56,17 @@ const Home = ({problem, verdicts}: {problem: Problem|null, verdicts: Verdict[]})
                     defaultValue={"1"}
                     allowDeselect={false}
                 />
-                <Text fz={26} fw={600} ml={"md"} my={"auto"} ff={"monospace"} className={"tracking-wider"}
-                      style={{
-                          color: verdicts[caseIndex]?.status_id === 3 ? "#2cad40" : verdicts[caseIndex]?.status_id < 3 ? "gray" : "red",
-                      }}
-                >
-                    {verdicts[caseIndex]?.status}
-                </Text>
-                {verdicts[caseIndex]?.time && <>
+                {verdicts[caseIndex]?.time && <Group mx={10}>
                     <Text ff={"monospace"} c={"#fcfcfc"} fz={20}>{verdicts[caseIndex]?.time*1000 + " ms"}</Text>
                     <Text ff={"monospace"} c={"#fcfcfc"} fz={20}>{Math.floor(verdicts[caseIndex]?.memory/1024) + " Mb"}</Text>
-                </>}
+                </Group>}
+                <Text fz={26} fw={600} ml={"md"} my={"auto"} ff={"monospace"} className={"tracking-wider"}
+                      style={{
+                          color: otherVerdict?.status_id === 3 ? "#2cad40" : otherVerdict?.status_id < 3 ? "gray" : "red",
+                      }}
+                >
+                    {otherVerdict?.status}
+                </Text>
             </Group>
 
             <Group h={"90%"} w={"100%"}>
