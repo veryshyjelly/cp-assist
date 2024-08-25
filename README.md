@@ -3,7 +3,7 @@
 ## App preview
 ![alt text](https://github.com/veryshyjelly/cp-assist/blob/main/cp-assist-shot.png?raw=true)
 
-![alt text](https://github.com/veryshyjelly/cp-assist/blob/main/cp-assist-cast.webm?raw=true)
+[!(renamed webm)](https://github.com/veryshyjelly/cp-assist/blob/main/cp-assist-cast.mp4?raw=true)
 
 ## Installation
 - Prerequisites:
