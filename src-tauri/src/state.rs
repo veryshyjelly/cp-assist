@@ -20,6 +20,8 @@ pub struct AppState {
     pub language_id: usize,
     #[serde(default)]
     pub language_dir: HashMap<usize, String>,
+    #[serde(default)]
+    pub language_id_map: HashMap<usize, usize>,
     #[serde(default, skip_serializing)]
     pub problem: Problem,
     #[serde(default, skip_serializing)]
@@ -40,6 +42,27 @@ impl AppState {
             let mut state = AppState::default();
             state.self_url = "http://127.0.0.1:27121".into();
             state.base_url = "http://127.0.0.1:2358".into();
+            state.language_id_map = HashMap::from([
+                (6, 43),
+                (7, 9),
+                (8, 91),
+                (10, 28),
+                (14, 32),
+                (15, 12),
+                (16, 87),
+                (17, 55),
+                (19, 19),
+                (21, 4),
+                (22, 6),
+                (24, 31),
+                (25, 67),
+                (26, 75),
+                (28, 43),
+                (29, 9),
+                (31, 88),
+                (34, 20),
+                (38, 13),
+            ]);
             f.write_fmt(format_args!("{}", serde_json::to_string(&state)?))?;
             state
         };
@@ -93,7 +116,10 @@ pub fn save_state(
     handle: tauri::AppHandle,
     state: State<'_, Mutex<AppState>>,
 ) -> Result<(), String> {
-    let mut file_path = handle.path().app_config_dir().unwrap();
+    let mut file_path = handle
+        .path()
+        .app_config_dir()
+        .map_err(|err| format!("{}", err))?;
     file_path.push("cp_state.json");
 
     let state = state.lock().unwrap().deref().clone();
@@ -111,7 +137,7 @@ pub fn save_state(
 #[tauri::command]
 pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), String> {
     let state = app_state.lock().unwrap().clone();
-    let mut file_path = PathBuf::from_str(&state.directory).unwrap();
+    let mut file_path = PathBuf::from_str(&state.directory).map_err(|err| format!("{}", err))?;
     let mut template_path = file_path.clone();
     template_path.push("template");
     file_path.push(
@@ -126,14 +152,19 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
     template_path.set_extension(get_extension(app_state.clone()).await?);
     println!("creating file: {:?}", file_path);
     let mut f = File::create_new(file_path).map_err(|err| format!("{err}"))?;
-    
-    f.write_fmt(format_args!("{}\n", state.problem.url)).map_err(|err| format!("{err}"))?;
-    
+
+    f.write_fmt(format_args!("{}\n", state.problem.url))
+        .map_err(|err| format!("{err}"))?;
+
     if template_path.exists() {
         let mut template = String::new();
-        File::open(template_path).unwrap().read_to_string(&mut template).map_err(|err| format!("{err}"))?;
-        f.write_fmt(format_args!("{}", template)).map_err(|err| format!("{err}"))?;
+        File::open(template_path)
+            .map_err(|err| format!("{err}"))?
+            .read_to_string(&mut template)
+            .map_err(|err| format!("{err}"))?;
+        f.write_fmt(format_args!("{}", template))
+            .map_err(|err| format!("{err}"))?;
     }
-    
+
     Ok(())
 }

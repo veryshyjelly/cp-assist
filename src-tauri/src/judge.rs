@@ -92,7 +92,9 @@ pub async fn test(
     submission.memory_limit = state.problem.memory_limit * 1024;
 
     let mut verdicts = state.verdicts;
-    let client = reqwest::Client::builder().build().unwrap();
+    let client = reqwest::Client::builder()
+        .build()
+        .map_err(|err| format!("{err}"))?;
     let base_url = state.base_url.clone();
     let mut verdict_token = HashMap::new();
     for (i, v) in verdicts.iter().enumerate() {
@@ -104,15 +106,15 @@ pub async fn test(
             ))
             .json(&submission)
             .build()
-            .unwrap();
+            .map_err(|err| format!("{err}"))?;
         let response: Submission = serde_json::from_str(
             &client
                 .execute(post_request)
                 .await
-                .unwrap()
+                .map_err(|err| format!("{err}"))?
                 .text()
                 .await
-                .unwrap(),
+                .map_err(|err| format!("{err}"))?,
         )
         .unwrap();
         verdict_token.insert(response.token, i);
@@ -125,15 +127,15 @@ pub async fn test(
             let get_request = client
                 .get(format!("{base_url}/submissions/{v}?base64_encoded=false"))
                 .build()
-                .unwrap();
+                .map_err(|err| format!("{err}"))?;
             let response: Submission = serde_json::from_str(
                 &client
                     .execute(get_request)
                     .await
-                    .unwrap()
+                    .map_err(|err| format!("{err}"))?
                     .text()
                     .await
-                    .unwrap(),
+                    .map_err(|err| format!("{err}"))?,
             )
             .unwrap();
 
@@ -148,7 +150,9 @@ pub async fn test(
             }
         }
 
-        handle.emit("set-verdicts", verdicts.clone()).unwrap();
+        handle
+            .emit("set-verdicts", verdicts.clone())
+            .map_err(|err| format!("{err}"))?;
         verdict_token = new_verdict_tokens;
 
         sleep_until(Instant::now() + Duration::from_millis(100)).await;

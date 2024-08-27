@@ -2,13 +2,15 @@ mod info;
 mod judge;
 mod language;
 mod state;
+mod submit;
 
-use actix_web::{App, HttpServer};
+use actix_web::{web, App, HttpServer};
 use info::*;
 use judge::*;
 use language::*;
 use state::*;
 use std::sync::{Mutex, OnceLock};
+use submit::*;
 use tauri::{AppHandle, Manager, WebviewWindow};
 
 pub static WINDOW: OnceLock<WebviewWindow> = OnceLock::new();
@@ -22,10 +24,20 @@ pub fn run() {
 
             _ = WINDOW.set(window);
 
+            let web_state = web::Data::new(WebState {
+                sol: Mutex::new(None),
+            });
+
             tauri::async_runtime::spawn(
-                HttpServer::new(|| App::new().service(get_info))
-                    .bind(("127.0.0.1", 27121))?
-                    .run(),
+                HttpServer::new(move || {
+                    App::new()
+                        .app_data(web_state.clone())
+                        .service(get_info)
+                        .service(get_submit)
+                        .service(post_submit)
+                })
+                .bind(("127.0.0.1", 27121))?
+                .run(),
             );
 
             let dir = app.path().app_config_dir().unwrap();
@@ -42,6 +54,7 @@ pub fn run() {
             create_file,
             get_extension,
             test,
+            submit_solution,
             save_state,
             get_directory,
             set_directory,

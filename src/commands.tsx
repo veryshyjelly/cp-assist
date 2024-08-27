@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { notifications } from "@mantine/notifications";
 import { IconCheck, IconX } from "@tabler/icons-react";
-import {Language, Problem, Verdict} from "./Languages.ts";
+import { Language, Problem, Verdict } from "./Languages.ts";
 
 export const set_directory = async (directory: string) => {
     try {
@@ -234,7 +234,13 @@ export const run = async () => {
 
 export const submit = async () => {
     try {
-        return (await invoke("submit")) as Verdict[];
+        await invoke("submit_solution");
+        notifications.show({
+            id: "language_set",
+            message: "submitting on codeforces...",
+            icon: <IconCheck size="1.1rem" />,
+            color: "teal",
+        });
     } catch (e) {
         console.error(e);
         notifications.show({
@@ -243,8 +249,8 @@ export const submit = async () => {
             icon: <IconX size="1.1rem" />,
             color: "red",
         });
-        return null;
     }
+    return null;
 };
 
 export const create_file = async () => {
