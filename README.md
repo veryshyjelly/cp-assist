@@ -30,11 +30,11 @@ https://github.com/user-attachments/assets/516eacd3-817e-4e87-bcbf-0817f914553f
 - Linux:
     - arch linux:
     ```
-        wget https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.1-alpha/cp-assist-0.1.1-1-x86_64.pkg.tar.zst
+        wget https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.2-alpha/cp-assist-0.1.2-1-x86_64.pkg.tar.zst
         pacman -U cp-assist-0.1.1-1-x86_64.pkg.tar.zst
     ```
-    - debian: [.deb file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.1-alpha/cp-assist_0.1.1_amd64.deb)
-    - red-hat: [.rpm file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.1-alpha/cp-assist-0.1.1-1.x86_64.rpm)
+    - debian: [.deb file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.2-alpha/cp-assist_0.1.2_amd64.deb)
+    - red-hat: [.rpm file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.2-alpha/cp-assist-0.1.2-1.x86_64.rpm)
 
 - Windows:
     - msi installer: [msi](https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.1-alpha/cp-assist_0.1.1_x64_en-US.msi)
