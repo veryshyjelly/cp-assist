@@ -1,0 +1,230 @@
+[1]
+name = "Assembly"
+source_file = "main.asm"
+compile_cmd = "nasmld"
+compiler_args = ["-f", "elf64", "main.asm"]
+run_cmd = "./a.out"
+
+[2]
+name = "Bash"
+source_file = "script.sh"
+run_cmd = "bash"
+run_args = ["script.sh"]
+
+[3]
+name = "C (GCC)"
+source_file = "main.c"
+compile_cmd = "gcc"
+compiler_args = ["-fmax-errors=10", "-lm", "-Wall", "-O2", "main.c"]
+run_cmd = "./a.out"
+
+[4]
+name = "C++ (GCC)"
+source_file = "main.cpp"
+compile_cmd = "g++"
+compiler_args = ["-fmax-errors=10", "-lm", "-Wall", "-O2", "main.cpp"]
+run_cmd = "./a.out"
+
+[5]
+name = "C# (Mono)"
+source_file = "Main.cs"
+compile_cmd = "mcs"
+compiler_args = ["Main.cs"]
+run_cmd = "mono Main.exe"
+
+[6]
+name = "SBCL"
+source_file = "script.lisp"
+run_cmd = "sbcl"
+run_args = ["--script", "script.lisp"]
+
+[7]
+name = "D (DMD)"
+source_file = "main.d"
+compile_cmd = "dmd"
+compiler_args = ["main.d"]
+run_cmd = "./main"
+
+[8]
+name = "Elixir"
+source_file = "script.exs"
+run_cmd = "elixir"
+run_args = ["script.exs"]
+
+[9]
+name = "Erlang/OTP 27"
+source_file = "main.erl"
+run_cmd = "escript"
+run_args = ["main.erl"]
+
+[10]
+name = "Fortran (Gfortran)"
+source_file = "main.f90"
+compile_cmd = "gfortran"
+compiler_args = ["main.f90"]
+run_cmd = "./a.out"
+
+[11]
+name = "Go"
+source_file = "main.go"
+compile_cmd = "go"
+compiler_args = ["build", "main.go"]
+run_cmd = "./main"
+
+[12]
+name = "Haskell (GHC)"
+source_file = "main.hs"
+compile_cmd = "ghc"
+compiler_args = ["-dynamic", "main.hs"]
+run_cmd = "./main"
+
+[13]
+name = "Java"
+source_file = "Main.java"
+compile_cmd = "javac"
+compiler_args = ["Main.java"]
+run_cmd = "java"
+run_args = ["Main"]
+
+[14]
+name = "Javascript (Nodejs)"
+source_file = "script.js"
+compile_cmd = "node"
+compiler_args = ["-c", "script.js"]
+run_cmd = "node"
+run_args = ["script.js"]
+
+[15]
+name = "Lua"
+source_file = "script.lua"
+compile_cmd = "lua"
+compiler_args = ["script.lua"]
+run_cmd = "lua"
+run_args = ["./luac.out"]
+
+[16]
+name = "Ocaml"
+source_file = "main.ml"
+compile_cmd = "ocamlc"
+compiler_args = ["main.ml"]
+run_cmd = "./a.out"
+
+[17]
+name = "Octave"
+source_file = "script.m"
+run_cmd = "octave-cli"
+run_args = ["-q", "--no-gui", "--no-history", "script.m"]
+
+[18]
+name = "Pascal (FPC)"
+source_file = "main.pas"
+compile_cmd = "fpc"
+compiler_args = ["main.pas"]
+run_cmd = "./main"
+
+[19]
+name = "PHP"
+source_file = "script.php"
+run_cmd = "php"
+run_args = ["script.php"]
+
+[20]
+name = "Python"
+source_file = "script.py"
+compile_cmd = "python3"
+compiler_args = ["-m", "py_compile", "script.py"]
+run_cmd = "python3"
+run_args = ["script.py"]
+
+[21]
+name = "Ruby"
+source_file = "script.rb"
+compile_cmd = "ruby"
+compiler_args = ["-c", "script.rb"]
+run_cmd = "ruby"
+run_args = ["script.rb"]
+
+[22]
+name = "Rust"
+source_file = "main.rs"
+compile_cmd = "rustc"
+compiler_args = ["-O", "main.rs"]
+run_cmd = "./main"
+
+[23]
+name = "Typescript"
+source_file = "script.ts"
+compile_cmd = "tsc"
+compiler_args = ["script.ts"]
+run_cmd = "node"
+run_args = ["script.js"]
+
+[24]
+name = "C (Clang)"
+source_file = "main.c"
+compile_cmd = "clang"
+compiler_args = ["-O2", "main.c"]
+run_cmd = "./a.out"
+
+[25]
+name = "C++ (Clang)"
+source_file = "main.cpp"
+compile_cmd = "clang++"
+compiler_args = ["-O2", "main.cpp"]
+run_cmd = "./a.out"
+
+[26]
+name = "Kotlin"
+source_file = "Main.kt"
+compile_cmd = "kotlinc"
+compiler_args = ["Main.kt"]
+run_cmd = "kotlin"
+run_args = ["MainKT"]
+
+[27]
+name = "R"
+source_file = "script.r"
+run_cmd = "Rscript"
+run_args = ["script.r"]
+
+[28]
+name = "Scala"
+source_file = "Main.scala"
+compile_cmd = "scalac"
+compiler_args = ["Main.scala"]
+run_cmd = "scala"
+run_args = ["Main"]
+
+[29]
+name = "Visual Basic.Net (vbnc)"
+source_file = "Main.vb"
+compile_cmd = "vbnc"
+compiler_args = ["Main.vb"]
+run_cmd = "mono"
+run_args = ["Main.exe"]
+
+[30]
+name = "Perl"
+source_file = "script.pl"
+run_cmd = "perl"
+run_args = ["script.pl"]
+
+[31]
+name = "Clojure"
+source_file = "main.clj"
+run_cmd = "clojure"
+run_args = ["-M", "main.clj"]
+
+[32]
+name = "F#"
+source_file = "script.fsx"
+run_cmd = "dotnet"
+run_args = ["fsi", "script.fsx"]
+
+[33]
+name = "Groovy"
+source_file = "script.groovy"
+compile_cmd = "groovyc"
+compiler_args = ["script.groovy"]
+run_cmd = "groovy"
+run_args = ["script"]

@@ -1,7 +1,6 @@
-use crate::file_name;
 use crate::info::Problem;
 use crate::judge::Verdict;
-use crate::language::get_extension;
+use crate::{file_name, Language};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::{create_dir_all, File};
@@ -14,14 +13,14 @@ use tauri::{Manager, State};
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct AppState {
-    pub self_url: String,
-    pub base_url: String,
     pub directory: String,
     pub language_id: usize,
     #[serde(default)]
     pub language_dir: HashMap<usize, String>,
     #[serde(default)]
     pub language_id_map: HashMap<usize, usize>,
+    #[serde(default, skip_serializing)]
+    pub languages: HashMap<String, Language>,
     #[serde(default, skip_serializing)]
     pub problem: Problem,
     #[serde(default, skip_serializing)]
@@ -40,8 +39,7 @@ impl AppState {
         } else {
             let mut f = File::create(file_path)?;
             let mut state = AppState::default();
-            state.self_url = "http://127.0.0.1:27121".into();
-            state.base_url = "http://127.0.0.1:2358".into();
+            // TODO: update this map
             state.language_id_map = HashMap::from([
                 (6, 43),
                 (7, 9),
@@ -68,6 +66,22 @@ impl AppState {
         };
 
         Ok(res)
+    }
+
+    pub fn get_language(&self) -> Result<Language, String> {
+        let language = self
+            .languages
+            .get(&self.language_id.to_string())
+            .ok_or("language not found in langauges")?
+            .clone();
+        Ok(language)
+    }
+
+    pub fn get_language_dir(&self) -> String {
+        self.language_dir
+            .get(&self.language_id)
+            .unwrap_or(&"".into())
+            .clone()
     }
 }
 
@@ -99,16 +113,6 @@ pub fn get_verdicts(state: State<'_, Mutex<AppState>>) -> Vec<Verdict> {
 #[tauri::command]
 pub fn set_verdicts(verdicts: Vec<Verdict>, state: State<'_, Mutex<AppState>>) {
     state.lock().unwrap().verdicts = verdicts
-}
-
-#[tauri::command]
-pub fn get_base_url(state: State<'_, Mutex<AppState>>) -> String {
-    state.lock().unwrap().base_url.clone()
-}
-
-#[tauri::command]
-pub fn set_base_url(url: String, state: State<'_, Mutex<AppState>>) {
-    state.lock().unwrap().base_url = url
 }
 
 #[tauri::command]
@@ -148,8 +152,8 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
     );
     create_dir_all(&file_path).map_err(|err| format!("{err}"))?;
     file_path.push(file_name(&state.problem.title));
-    file_path.set_extension(get_extension(app_state.clone()).await?);
-    template_path.set_extension(get_extension(app_state.clone()).await?);
+    file_path.set_extension(state.get_language()?.get_extension());
+    template_path.set_extension(state.get_language()?.get_extension());
     println!("creating file: {:?}", file_path);
     let mut f = File::create_new(file_path).map_err(|err| format!("{err}"))?;
 

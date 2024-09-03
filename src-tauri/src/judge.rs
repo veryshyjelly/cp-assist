@@ -1,17 +1,15 @@
-use crate::file_name;
-use crate::language::get_extension;
 use crate::state::AppState;
-use actix_web::rt::time::{sleep_until, Instant};
+use crate::{file_name, Language};
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DefaultOnNull};
-use std::fs::File;
-use std::io::Read;
-use std::path::PathBuf;
+use std::fs::{self, create_dir_all, remove_dir_all};
+use std::io::Write;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::sync::Mutex;
-use std::{collections::HashMap, time::Duration};
 use tauri::{Emitter, State};
-use tauri_plugin_http::reqwest;
+use uuid::Uuid;
 
 #[serde_as]
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
@@ -26,7 +24,6 @@ pub struct Submission {
     cpu_time_limit: f32, // seconds
     memory_limit: usize, // kb
     redirect_stderr_to_stdout: bool,
-    enable_network: bool,
     callback_url: String,
     #[serde_as(deserialize_as = "DefaultOnNull")]
     stdout: String,
@@ -69,94 +66,151 @@ pub async fn test(
     handle: tauri::AppHandle,
 ) -> Result<(), String> {
     let state = app_state.lock().unwrap().clone();
-    let mut file_path = PathBuf::from_str(&state.directory).unwrap();
-    file_path.push(
-        state
-            .language_dir
-            .get(&state.language_id)
-            .unwrap_or(&"".into()),
-    );
-    file_path.push(file_name(&state.problem.title));
-    file_path.set_extension(get_extension(app_state.clone()).await?);
 
-    let mut submission = Submission::default();
+    // creating a temporary directory
+    let mut dir = std::env::temp_dir();
+    dir.push(Uuid::new_v4().to_string());
 
-    File::open(file_path)
-        .map_err(|err| format!("{err}"))?
-        .read_to_string(&mut submission.source_code)
-        .map_err(|err| format!("{err}"))?;
+    let language = state.get_language()?;
 
-    submission.redirect_stderr_to_stdout = true;
-    submission.language_id = state.language_id;
-    submission.cpu_time_limit = state.problem.time_limit as f32 / 1000.0;
-    submission.memory_limit = state.problem.memory_limit * 1024;
+    let mut file_path = dir.clone();
+    file_path.push(&language.source_file);
 
-    let mut verdicts = state.verdicts;
-    let client = reqwest::Client::builder()
-        .build()
-        .map_err(|err| format!("{err}"))?;
-    let base_url = state.base_url.clone();
-    let mut verdict_token = HashMap::new();
-    for (i, v) in verdicts.iter().enumerate() {
-        submission.stdin = v.input.clone();
-        submission.expected_output = v.answer.clone();
-        let post_request = client
-            .post(format!(
-                "{base_url}/submissions/?base64_encoded=false&wait=false"
-            ))
-            .json(&submission)
-            .build()
-            .map_err(|err| format!("{err}"))?;
-        let response: Submission = serde_json::from_str(
-            &client
-                .execute(post_request)
-                .await
-                .map_err(|err| format!("{err}"))?
-                .text()
-                .await
-                .map_err(|err| format!("{err}"))?,
-        )
-        .unwrap();
-        verdict_token.insert(response.token, i);
-    }
+    let mut source_file_path = PathBuf::from_str(&state.directory).unwrap();
+    source_file_path.push(state.get_language_dir());
+    source_file_path.push(file_name(&state.problem.title));
+    source_file_path.set_extension(state.get_language()?.get_extension());
 
-    while !verdict_token.is_empty() {
-        let mut new_verdict_tokens = HashMap::new();
+    // copy the file into the temporary directory
+    create_dir_all(&dir).map_err(|err| format!("{err}"))?;
+    fs::copy(source_file_path, file_path).map_err(|err| format!("{err}"))?;
 
-        for (v, i) in verdict_token.into_iter() {
-            let get_request = client
-                .get(format!("{base_url}/submissions/{v}?base64_encoded=false"))
-                .build()
-                .map_err(|err| format!("{err}"))?;
-            let response: Submission = serde_json::from_str(
-                &client
-                    .execute(get_request)
-                    .await
-                    .map_err(|err| format!("{err}"))?
-                    .text()
-                    .await
-                    .map_err(|err| format!("{err}"))?,
-            )
-            .unwrap();
+    let mut verdicts = state
+        .verdicts
+        .into_iter()
+        .map(|mut v| {
+            v.status = "Compiling".into();
+            v.status_id = 1;
+            v
+        })
+        .collect::<Vec<_>>();
 
-            verdicts[i].time = response.time.clone();
-            verdicts[i].output = response.stdout.clone();
-            verdicts[i].memory = response.memory;
-            verdicts[i].status_id = response.status.id;
-            verdicts[i].status = response.status.description;
-
-            if response.status.id == 1 || response.status.id == 2 {
-                new_verdict_tokens.insert(v, i);
-            }
+    if let Err(e) = compile(&language, &dir) {
+        for v in verdicts.iter_mut() {
+            v.output = e.clone();
+            v.status = "Compilation Error".into();
+            v.status_id = 6;
         }
-
         handle
             .emit("set-verdicts", verdicts.clone())
             .map_err(|err| format!("{err}"))?;
-        verdict_token = new_verdict_tokens;
+    } else {
+        for v in verdicts.iter_mut() {
+            v.status = "Running".into();
+            v.status_id = 2;
+        }
+        handle
+            .emit("set-verdicts", verdicts.clone())
+            .map_err(|err| format!("{err}"))?;
 
-        sleep_until(Instant::now() + Duration::from_millis(100)).await;
+        let verdicts = run_all(&language, &dir, verdicts)?;
+        handle
+            .emit("set-verdicts", verdicts.clone())
+            .map_err(|err| format!("{err}"))?;
     }
 
+    remove_dir_all(dir).map_err(|err| format!("{err}"))?;
+
     Ok(())
+}
+
+fn compile(language: &Language, dir: &Path) -> Result<bool, String> {
+    if language.compile_cmd.is_empty() {
+        return Ok(true);
+    }
+
+    let output = Command::new(&language.compile_cmd)
+        .current_dir(dir)
+        .args(&language.compiler_args)
+        .output()
+        .map_err(|err| format!("{err}"))?;
+
+    if output.status.success() {
+        Ok(true)
+    } else {
+        Err(String::from_utf8_lossy(&output.stderr).to_string()
+            + String::from_utf8_lossy(&output.stdout).to_string().as_str())
+    }
+}
+
+fn run_all(
+    language: &Language,
+    dir: &Path,
+    verdicts: Vec<Verdict>,
+) -> Result<Vec<Verdict>, String> {
+    let mut res = vec![];
+    for v in verdicts {
+        res.push(run(language, dir, v)?);
+    }
+    Ok(res)
+}
+
+fn run(language: &Language, dir: &Path, mut verdict: Verdict) -> Result<Verdict, String> {
+    let mut child = Command::new(&language.run_cmd)
+        .current_dir(dir)
+        .args(&language.run_args)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_err(|err| format!("{err}"))?;
+
+    if let Some(mut stdin) = child.stdin.take() {
+        stdin
+            .write_all(verdict.input.as_bytes())
+            .map_err(|err| format!("{err}"))?;
+    }
+
+    let output = child.wait_with_output().map_err(|err| format!("{err}"));
+
+    match output {
+        Ok(sucess) => {
+            if !sucess.status.success() {
+                verdict.output = String::from_utf8_lossy(&sucess.stderr).into();
+                verdict.status_id = 11;
+                verdict.status = "Runtime Error (NZEC)".into();
+            } else {
+                verdict.output = String::from_utf8_lossy(&sucess.stdout).to_string();
+                if check(&verdict.answer, &verdict.output) {
+                    verdict.status = "Accepted".into();
+                    verdict.status_id = 3;
+                } else {
+                    verdict.status = "Wrong Answer".into();
+                    verdict.status_id = 4;
+                }
+            }
+        }
+        Err(runtime_err) => {
+            verdict.output = runtime_err;
+            verdict.status_id = 7;
+            verdict.status = "Runtime Error (SIGABRT)".into();
+        }
+    }
+
+    Ok(verdict)
+}
+
+fn check(output: &String, answer: &String) -> bool {
+    output
+        .trim()
+        .split('\n')
+        .map(|x| x.trim())
+        .collect::<Vec<&str>>()
+        .join("\n")
+        == answer
+            .trim()
+            .split('\n')
+            .map(|x| x.trim())
+            .collect::<Vec<&str>>()
+            .join("\n")
 }

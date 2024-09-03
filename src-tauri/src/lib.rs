@@ -52,7 +52,6 @@ pub fn run() {
         }))
         .invoke_handler(tauri::generate_handler![
             create_file,
-            get_extension,
             test,
             submit_solution,
             save_state,
@@ -67,8 +66,6 @@ pub fn run() {
             set_problem,
             get_verdicts,
             set_verdicts,
-            get_base_url,
-            set_base_url
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -4,7 +4,7 @@ use actix_web::{get, post, web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use tauri_plugin_http::reqwest;
 
-use crate::{file_name, get_extension, AppState};
+use crate::{file_name, AppState};
 
 pub struct WebState {
     pub sol: Mutex<Option<Solution>>,
@@ -58,7 +58,7 @@ pub async fn submit_solution(app_state: tauri::State<'_, Mutex<AppState>>) -> Re
     );
 
     file_path.push(file_name(&state.problem.title));
-    file_path.set_extension(get_extension(app_state.clone()).await?);
+    file_path.set_extension(state.get_language()?.get_extension());
 
     let mut source_code = String::new();
 
@@ -95,7 +95,7 @@ pub async fn submit_solution(app_state: tauri::State<'_, Mutex<AppState>>) -> Re
     };
 
     let post_request = client
-        .post(state.self_url + "/submit")
+        .post("http:/localhost:27121/submit")
         .json(&solution)
         .build()
         .map_err(|err| format!("{err}"))?;
