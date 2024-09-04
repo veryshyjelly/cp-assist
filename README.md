@@ -12,29 +12,16 @@ https://github.com/user-attachments/assets/516eacd3-817e-4e87-bcbf-0817f914553f
 ## Installation
 - Prerequisites:
     - competitive-companion [link](https://github.com/jmerle/competitive-companion)
-    - judge0 installation (local or remote)
-        1. install docker and docker-compose
-        2. Download and extract the release archive:
-        ```
-            wget https://github.com/veryshyjelly/judge0/releases/download/v69/judge0.zip
-            unzip judge0.zip
-            cd judge0
-        ```
-        3. Add password for `POSTGRES_PASSWORD` and `REDIS_PASSWORD` in `judge0.conf` file
-        4. Run all services and wait a few seconds until everything is initialized:
-        ```
-            docker-compose up -d db redis
-            docker-compose up -d
-        ```
+    - cph-submit [link](https://github.com/agrawal-d/cph-submit)
         
 - Linux:
     - arch linux:
     ```
-        wget https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.2-alpha/cp-assist-0.1.2-1-x86_64.pkg.tar.zst
-        pacman -U cp-assist-0.1.2-1-x86_64.pkg.tar.zst
+        wget https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.0-alpha/cp-assist-0.2.0-1-x86_64.pkg.tar.zst
+        pacman -U cp-assist-0.2.0-1-x86_64.pkg.tar.zst
     ```
-    - debian: [.deb file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.2-alpha/cp-assist_0.1.2_amd64.deb)
-    - red-hat: [.rpm file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.2-alpha/cp-assist-0.1.2-1.x86_64.rpm)
+    - debian: [.deb file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.0-alpha/cp-assist_0.2.0_amd64.deb)
+    - red-hat: [.rpm file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.0-alpha/cp-assist-0.2.0-1.x86_64.rpm)
 
 - Windows:
     - msi installer: [msi](https://github.com/veryshyjelly/cp-assist/releases/download/v0.1.1-alpha/cp-assist_0.1.1_x64_en-US.msi)
