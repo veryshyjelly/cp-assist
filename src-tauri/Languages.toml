@@ -1,7 +1,7 @@
 [1]
 name = "Assembly"
 source_file = "main.asm"
-compile_cmd = "nasmld"
+compiler_cmd = "nasmld"
 compiler_args = ["-f", "elf64", "main.asm"]
 run_cmd = "./a.out"
 
@@ -12,23 +12,26 @@ run_cmd = "bash"
 run_args = ["script.sh"]
 
 [3]
+cf_id = 43
 name = "C (GCC)"
 source_file = "main.c"
-compile_cmd = "gcc"
+compiler_cmd = "gcc"
 compiler_args = ["-fmax-errors=10", "-lm", "-Wall", "-O2", "main.c"]
 run_cmd = "./a.out"
 
 [4]
+cf_id = 91
 name = "C++ (GCC)"
 source_file = "main.cpp"
-compile_cmd = "g++"
+compiler_cmd = "g++"
 compiler_args = ["-fmax-errors=10", "-lm", "-Wall", "-O2", "main.cpp"]
 run_cmd = "./a.out"
 
 [5]
+cf_id = 9
 name = "C# (Mono)"
 source_file = "Main.cs"
-compile_cmd = "mcs"
+compiler_cmd = "mcs"
 compiler_args = ["Main.cs"]
 run_cmd = "mono Main.exe"
 
@@ -39,9 +42,10 @@ run_cmd = "sbcl"
 run_args = ["--script", "script.lisp"]
 
 [7]
+cf_id = 28
 name = "D (DMD)"
 source_file = "main.d"
-compile_cmd = "dmd"
+compiler_cmd = "dmd"
 compiler_args = ["main.d"]
 run_cmd = "./main"
 
@@ -60,36 +64,40 @@ run_args = ["main.erl"]
 [10]
 name = "Fortran (Gfortran)"
 source_file = "main.f90"
-compile_cmd = "gfortran"
+compiler_cmd = "gfortran"
 compiler_args = ["main.f90"]
 run_cmd = "./a.out"
 
 [11]
+cf_id = 32
 name = "Go"
 source_file = "main.go"
-compile_cmd = "go"
+compiler_cmd = "go"
 compiler_args = ["build", "main.go"]
 run_cmd = "./main"
 
 [12]
+cf_id = 12
 name = "Haskell (GHC)"
 source_file = "main.hs"
-compile_cmd = "ghc"
+compiler_cmd = "ghc"
 compiler_args = ["-dynamic", "main.hs"]
 run_cmd = "./main"
 
 [13]
+cf_id = 87
 name = "Java"
 source_file = "Main.java"
-compile_cmd = "javac"
+compiler_cmd = "javac"
 compiler_args = ["Main.java"]
 run_cmd = "java"
 run_args = ["Main"]
 
 [14]
+cf_id = 55
 name = "Javascript (Nodejs)"
 source_file = "script.js"
-compile_cmd = "node"
+compiler_cmd = "node"
 compiler_args = ["-c", "script.js"]
 run_cmd = "node"
 run_args = ["script.js"]
@@ -97,15 +105,16 @@ run_args = ["script.js"]
 [15]
 name = "Lua"
 source_file = "script.lua"
-compile_cmd = "lua"
+compiler_cmd = "lua"
 compiler_args = ["script.lua"]
 run_cmd = "lua"
 run_args = ["./luac.out"]
 
 [16]
+cf_id = 19
 name = "Ocaml"
 source_file = "main.ml"
-compile_cmd = "ocamlc"
+compiler_cmd = "ocamlc"
 compiler_args = ["main.ml"]
 run_cmd = "./a.out"
 
@@ -116,67 +125,75 @@ run_cmd = "octave-cli"
 run_args = ["-q", "--no-gui", "--no-history", "script.m"]
 
 [18]
+cf_id = 4
 name = "Pascal (FPC)"
 source_file = "main.pas"
-compile_cmd = "fpc"
+compiler_cmd = "fpc"
 compiler_args = ["main.pas"]
 run_cmd = "./main"
 
 [19]
+cf_id = 6
 name = "PHP"
 source_file = "script.php"
 run_cmd = "php"
 run_args = ["script.php"]
 
 [20]
+cf_id = 31
 name = "Python"
 source_file = "script.py"
-compile_cmd = "python3"
+compiler_cmd = "python3"
 compiler_args = ["-m", "py_compile", "script.py"]
 run_cmd = "python3"
 run_args = ["script.py"]
 
 [21]
+cf_id = 67
 name = "Ruby"
 source_file = "script.rb"
-compile_cmd = "ruby"
+compiler_cmd = "ruby"
 compiler_args = ["-c", "script.rb"]
 run_cmd = "ruby"
 run_args = ["script.rb"]
 
 [22]
+cf_id = 75
 name = "Rust"
 source_file = "main.rs"
-compile_cmd = "rustc"
+compiler_cmd = "rustc"
 compiler_args = ["-O", "main.rs"]
 run_cmd = "./main"
 
 [23]
 name = "Typescript"
 source_file = "script.ts"
-compile_cmd = "tsc"
+compiler_cmd = "tsc"
 compiler_args = ["script.ts"]
 run_cmd = "node"
 run_args = ["script.js"]
 
 [24]
+cf_id = 43
 name = "C (Clang)"
 source_file = "main.c"
-compile_cmd = "clang"
+compiler_cmd = "clang"
 compiler_args = ["-O2", "main.c"]
 run_cmd = "./a.out"
 
 [25]
+cf_id = 89
 name = "C++ (Clang)"
 source_file = "main.cpp"
-compile_cmd = "clang++"
+compiler_cmd = "clang++"
 compiler_args = ["-O2", "main.cpp"]
 run_cmd = "./a.out"
 
 [26]
+cf_id = 88
 name = "Kotlin"
 source_file = "Main.kt"
-compile_cmd = "kotlinc"
+compiler_cmd = "kotlinc"
 compiler_args = ["Main.kt"]
 run_cmd = "kotlin"
 run_args = ["MainKT"]
@@ -188,9 +205,10 @@ run_cmd = "Rscript"
 run_args = ["script.r"]
 
 [28]
+cf_id = 20
 name = "Scala"
 source_file = "Main.scala"
-compile_cmd = "scalac"
+compiler_cmd = "scalac"
 compiler_args = ["Main.scala"]
 run_cmd = "scala"
 run_args = ["Main"]
@@ -198,12 +216,13 @@ run_args = ["Main"]
 [29]
 name = "Visual Basic.Net (vbnc)"
 source_file = "Main.vb"
-compile_cmd = "vbnc"
+compiler_cmd = "vbnc"
 compiler_args = ["Main.vb"]
 run_cmd = "mono"
 run_args = ["Main.exe"]
 
 [30]
+cf_id = 13
 name = "Perl"
 source_file = "script.pl"
 run_cmd = "perl"
@@ -224,7 +243,7 @@ run_args = ["fsi", "script.fsx"]
 [33]
 name = "Groovy"
 source_file = "script.groovy"
-compile_cmd = "groovyc"
+compiler_cmd = "groovyc"
 compiler_args = ["script.groovy"]
 run_cmd = "groovy"
 run_args = ["script"]

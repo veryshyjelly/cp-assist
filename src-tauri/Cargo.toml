@@ -1,8 +1,8 @@
 [package]
 name = "cp"
-version = "0.1.2"
+version = "0.2.0"
 description = "A Competitive Programming assistant"
-authors = ["you"]
+authors = ["Ayush Biswas"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -18,21 +18,18 @@ tauri-build = { version = "2.0.0-rc", features = [] }
 tauri = { version = "2.0.0-rc", features = [] }
 tauri-plugin-shell = "2.0.0-rc"
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+serde_json = "1.0.127"
 tauri-plugin-dialog = "2.0.0-rc.0"
-strum = "0.26.3"
-strum_macros = "0.26.4"
 actix-web = "4.9.0"
 tauri-plugin-http = "2.0.0-rc.0"
-serde_with = "3.9.0"
 toml = { version = "0.8.19", features = ["preserve_order"] }
+wait-timeout = "0.2.0"
 
 [dependencies.uuid]
 version = "1.10.0"
 features = [
-    "v4",                # Lets you generate random UUIDs
-    "fast-rng",          # Use a faster (but still sufficiently random) RNG
-    "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
+    "v4",       # Lets you generate random UUIDs
+    "fast-rng", # Use a faster (but still sufficiently random) RNG
 ]
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]

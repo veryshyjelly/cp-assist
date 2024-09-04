@@ -1,7 +1,6 @@
 use crate::state::AppState;
 use crate::{file_name, Language};
 use serde::{Deserialize, Serialize};
-use serde_with::{serde_as, DefaultOnNull};
 use std::fs::{self, create_dir_all, remove_dir_all};
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -10,44 +9,6 @@ use std::str::FromStr;
 use std::sync::Mutex;
 use tauri::{Emitter, State};
 use uuid::Uuid;
-
-#[serde_as]
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
-#[serde(default)]
-pub struct Submission {
-    source_code: String,
-    language_id: usize,
-    compiler_options: String,
-    command_line_arguments: String,
-    stdin: String,
-    expected_output: String,
-    cpu_time_limit: f32, // seconds
-    memory_limit: usize, // kb
-    redirect_stderr_to_stdout: bool,
-    callback_url: String,
-    #[serde_as(deserialize_as = "DefaultOnNull")]
-    stdout: String,
-    #[serde_as(deserialize_as = "DefaultOnNull")]
-    stderr: String,
-    #[serde_as(deserialize_as = "DefaultOnNull")]
-    compile_output: String,
-    #[serde_as(deserialize_as = "DefaultOnNull")]
-    message: String,
-    exit_code: usize,
-    #[serde_as(deserialize_as = "DefaultOnNull")]
-    time: String,
-    #[serde_as(deserialize_as = "DefaultOnNull")]
-    memory: f32,
-    #[serde_as(deserialize_as = "DefaultOnNull")]
-    status: Status,
-    token: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Default, Debug)]
-pub struct Status {
-    id: usize,
-    description: String,
-}
 
 #[derive(Serialize, Deserialize, Clone, Default)]
 pub struct Verdict {
@@ -125,11 +86,11 @@ pub async fn test(
 }
 
 fn compile(language: &Language, dir: &Path) -> Result<bool, String> {
-    if language.compile_cmd.is_empty() {
+    if language.compiler_cmd.is_empty() {
         return Ok(true);
     }
 
-    let output = Command::new(&language.compile_cmd)
+    let output = Command::new(&language.compiler_cmd)
         .current_dir(dir)
         .args(&language.compiler_args)
         .output()

@@ -85,10 +85,11 @@ pub async fn submit_solution(app_state: tauri::State<'_, Mutex<AppState>>) -> Re
 
     let solution = Solution {
         empty: false,
-        language_id: *state
-            .language_id_map
-            .get(&state.language_id)
-            .ok_or(format!("language not found on codeforces"))?,
+        language_id: state
+            .languages
+            .get(&state.language_id.to_string())
+            .ok_or(format!("language not found on codeforces"))?
+            .cf_id,
         problem_name,
         source_code,
         url: state.problem.url,

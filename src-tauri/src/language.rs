@@ -1,18 +1,20 @@
 use crate::state::AppState;
 use serde::{Deserialize, Serialize};
-use std::{fs::File, io::Read, sync::Mutex};
+use std::{fs::File, io::Read, process::Command, sync::Mutex, time::Duration};
 use tauri::State;
-
+use wait_timeout::ChildExt;
 #[allow(dead_code)]
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Language {
     #[serde(default)]
-    id: usize,
-    name: String,
+    pub id: usize,
+    #[serde(default)]
+    pub cf_id: usize,
+    pub name: String,
     #[serde(default, skip_serializing)]
     pub source_file: String,
     #[serde(default, skip_serializing)]
-    pub compile_cmd: String,
+    pub compiler_cmd: String,
     #[serde(default, skip_serializing)]
     pub compiler_args: Vec<String>,
     #[serde(default, skip_serializing)]
@@ -38,7 +40,13 @@ pub async fn get_languages(state: State<'_, Mutex<AppState>>) -> Result<Vec<Lang
         state.lock().unwrap().languages = toml::from_str(&langs).unwrap();
     }
 
-    let languages_map = state.lock().unwrap().languages.clone();
+    let languages_map = state
+        .lock()
+        .unwrap()
+        .languages
+        .clone()
+        .into_iter()
+        .filter(|(_k, v)| check(&v.compiler_cmd).is_ok());
 
     let mut languages = vec![];
     for (id, mut language) in languages_map {
@@ -47,6 +55,14 @@ pub async fn get_languages(state: State<'_, Mutex<AppState>>) -> Result<Vec<Lang
     }
 
     Ok(languages)
+}
+
+fn check(lang: &String) -> Result<(), ()> {
+    let _ = Command::new(lang)
+        .spawn()
+        .map_err(|_| ())?
+        .wait_timeout(Duration::from_secs(2));
+    Ok(())
 }
 
 #[tauri::command]
