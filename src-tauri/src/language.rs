@@ -1,6 +1,8 @@
 use crate::state::AppState;
 use serde::{Deserialize, Serialize};
-use std::{fs::File, io::Read, process::Command, sync::Mutex, time::Duration};
+use std::{
+    collections::HashMap, fs::File, io::Read, process::Command, sync::Mutex, time::Duration,
+};
 use tauri::State;
 use wait_timeout::ChildExt;
 #[allow(dead_code)]
@@ -37,16 +39,14 @@ pub async fn get_languages(state: State<'_, Mutex<AppState>>) -> Result<Vec<Lang
             .unwrap()
             .read_to_string(&mut langs)
             .unwrap();
-        state.lock().unwrap().languages = toml::from_str(&langs).unwrap();
+        let languages: HashMap<String, Language> = toml::from_str(&langs).unwrap();
+        state.lock().unwrap().languages = languages
+            .into_iter()
+            .filter(|(_k, v)| check(&v.compiler_cmd).is_ok())
+            .collect();
     }
 
-    let languages_map = state
-        .lock()
-        .unwrap()
-        .languages
-        .clone()
-        .into_iter()
-        .filter(|(_k, v)| check(&v.compiler_cmd).is_ok());
+    let languages_map = state.lock().unwrap().languages.clone();
 
     let mut languages = vec![];
     for (id, mut language) in languages_map {
