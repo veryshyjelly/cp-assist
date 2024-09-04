@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap, fs::File, io::Read, process::Command, sync::Mutex, time::Duration,
 };
-use tauri::State;
+use tauri::{path::BaseDirectory, Manager, State};
 use wait_timeout::ChildExt;
 #[allow(dead_code)]
 #[derive(Serialize, Deserialize, Clone)]
@@ -32,13 +32,22 @@ impl Language {
 }
 
 #[tauri::command]
-pub async fn get_languages(state: State<'_, Mutex<AppState>>) -> Result<Vec<Language>, String> {
+pub async fn get_languages(
+    state: State<'_, Mutex<AppState>>,
+    handle: tauri::AppHandle,
+) -> Result<Vec<Language>, String> {
     if state.lock().unwrap().languages.is_empty() {
         let mut langs = String::new();
-        File::open("Languages.toml")
-            .unwrap()
-            .read_to_string(&mut langs)
-            .unwrap();
+        File::open(
+            handle
+                .path()
+                .resolve("Languages.toml", BaseDirectory::Resource)
+                .map_err(|err| format!("{err}"))?,
+        )
+        .map_err(|err| format!("{err}"))?
+        .read_to_string(&mut langs)
+        .map_err(|err| format!("{err}"))?;
+
         let languages: HashMap<String, Language> = toml::from_str(&langs).unwrap();
         state.lock().unwrap().languages = languages
             .into_iter()
