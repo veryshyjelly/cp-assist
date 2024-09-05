@@ -1,4 +1,5 @@
 use crate::state::AppState;
+use crate::utils::ResultTrait;
 use crate::{file_name, Language};
 use serde::{Deserialize, Serialize};
 use std::fs::{self, create_dir_all, remove_dir_all};
@@ -17,7 +18,7 @@ pub struct Verdict {
     pub answer: String,
     pub status_id: usize,
     pub status: String,
-    pub time: String,
+    pub time: f32,
     pub memory: f32,
 }
 
@@ -43,50 +44,43 @@ pub async fn test(
     source_file_path.set_extension(state.get_language()?.get_extension());
 
     // copy the file into the temporary directory
-    create_dir_all(&dir).map_err(|err| format!("{err}"))?;
-    fs::copy(source_file_path, file_path).map_err(|err| format!("{err}"))?;
+    create_dir_all(&dir).map_to_string()?;
+    fs::copy(source_file_path, file_path).map_to_string()?;
 
-    let mut verdicts = state
-        .verdicts
-        .into_iter()
-        .map(|mut v| {
-            v.status = "Compiling".into();
-            v.status_id = 1;
-            v
-        })
-        .collect::<Vec<_>>();
+    let mut verdicts = state.verdicts;
+    for v in &mut verdicts {
+        v.status = "Compiling".into();
+        v.status_id = 1;
+    }
+    handle.emit("set-verdicts", &verdicts).map_to_string()?;
 
+    // First try to compiler and if compilation error occurs then return
     if let Err(e) = compile(&language, &dir) {
-        for v in verdicts.iter_mut() {
+        for v in &mut verdicts {
             v.output = e.clone();
             v.status = "Compilation Error".into();
             v.status_id = 6;
         }
-        handle
-            .emit("set-verdicts", verdicts.clone())
-            .map_err(|err| format!("{err}"))?;
+        handle.emit("set-verdicts", &verdicts).map_to_string()?;
     } else {
-        for v in verdicts.iter_mut() {
+        for v in &mut verdicts {
             v.status = "Running".into();
             v.status_id = 2;
         }
-        handle
-            .emit("set-verdicts", verdicts.clone())
-            .map_err(|err| format!("{err}"))?;
+        handle.emit("set-verdicts", &verdicts).map_to_string()?;
 
         let verdicts = run_all(&language, &dir, verdicts)?;
-        handle
-            .emit("set-verdicts", verdicts.clone())
-            .map_err(|err| format!("{err}"))?;
+        handle.emit("set-verdicts", &verdicts).map_to_string()?;
     }
 
-    remove_dir_all(dir).map_err(|err| format!("{err}"))?;
+    remove_dir_all(dir).map_to_string()?;
 
     Ok(())
 }
 
 fn compile(language: &Language, dir: &Path) -> Result<bool, String> {
     if language.compiler_cmd.is_empty() {
+        // If there is no compilation step then nothing to do
         return Ok(true);
     }
 
@@ -94,7 +88,7 @@ fn compile(language: &Language, dir: &Path) -> Result<bool, String> {
         .current_dir(dir)
         .args(&language.compiler_args)
         .output()
-        .map_err(|err| format!("{err}"))?;
+        .map_to_string()?;
 
     if output.status.success() {
         Ok(true)
@@ -124,15 +118,13 @@ fn run(language: &Language, dir: &Path, mut verdict: Verdict) -> Result<Verdict,
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .map_err(|err| format!("{err}"))?;
+        .map_to_string()?;
 
     if let Some(mut stdin) = child.stdin.take() {
-        stdin
-            .write_all(verdict.input.as_bytes())
-            .map_err(|err| format!("{err}"))?;
+        stdin.write_all(verdict.input.as_bytes()).map_to_string()?;
     }
 
-    let output = child.wait_with_output().map_err(|err| format!("{err}"));
+    let output = child.wait_with_output().map_to_string();
 
     match output {
         Ok(sucess) => {
@@ -166,12 +158,6 @@ fn check(output: &String, answer: &String) -> bool {
         .trim()
         .split('\n')
         .map(|x| x.trim())
-        .collect::<Vec<&str>>()
-        .join("\n")
-        == answer
-            .trim()
-            .split('\n')
-            .map(|x| x.trim())
-            .collect::<Vec<&str>>()
-            .join("\n")
+        .zip(answer.trim().split('\n').map(|x| x.trim()))
+        .all(|(x, y)| x == y)
 }

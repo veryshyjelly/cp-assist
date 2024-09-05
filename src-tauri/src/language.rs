@@ -1,33 +1,41 @@
-use crate::state::AppState;
+use crate::{state::AppState, utils::ResultTrait};
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap, fs::File, io::Read, process::Command, sync::Mutex, time::Duration,
+    collections::HashMap, fs::read_to_string, process::Command, sync::Mutex, time::Duration,
 };
 use tauri::{path::BaseDirectory, Manager, State};
 use wait_timeout::ChildExt;
-#[allow(dead_code)]
-#[derive(Serialize, Deserialize, Clone)]
+
+#[derive(Serialize, Deserialize, Clone, Default)]
+#[serde(default)]
 pub struct Language {
-    #[serde(default)]
     pub id: usize,
-    #[serde(default)]
     pub cf_id: usize,
     pub name: String,
-    #[serde(default, skip_serializing)]
+    #[serde(skip_serializing)]
     pub source_file: String,
-    #[serde(default, skip_serializing)]
+    #[serde(skip_serializing)]
     pub compiler_cmd: String,
-    #[serde(default, skip_serializing)]
+    #[serde(skip_serializing)]
     pub compiler_args: Vec<String>,
-    #[serde(default, skip_serializing)]
+    #[serde(skip_serializing)]
     pub run_cmd: String,
-    #[serde(default, skip_serializing)]
+    #[serde(skip_serializing)]
     pub run_args: Vec<String>,
 }
 
 impl Language {
     pub fn get_extension(&self) -> String {
         self.source_file.split('.').last().unwrap().into()
+    }
+
+    pub fn check(&self) -> bool {
+        if let Ok(mut o) = Command::new(&self.compiler_cmd).spawn() {
+            let _ = o.wait_timeout(Duration::from_secs(2));
+            true
+        } else {
+            false
+        }
     }
 }
 
@@ -37,22 +45,18 @@ pub async fn get_languages(
     handle: tauri::AppHandle,
 ) -> Result<Vec<Language>, String> {
     if state.lock().unwrap().languages.is_empty() {
-        let mut langs = String::new();
-        File::open(
-            handle
-                .path()
-                .resolve("Languages.toml", BaseDirectory::Resource)
-                .map_err(|err| format!("{err}"))?,
+        let languages: HashMap<String, Language> = toml::from_str(
+            &read_to_string(
+                handle
+                    .path()
+                    .resolve("Languages.toml", BaseDirectory::Resource)
+                    .map_to_string()?,
+            )
+            .map_to_string()?,
         )
-        .map_err(|err| format!("{err}"))?
-        .read_to_string(&mut langs)
-        .map_err(|err| format!("{err}"))?;
-
-        let languages: HashMap<String, Language> = toml::from_str(&langs).unwrap();
-        state.lock().unwrap().languages = languages
-            .into_iter()
-            .filter(|(_k, v)| check(&v.compiler_cmd).is_ok())
-            .collect();
+        .map_to_string()?;
+        state.lock().unwrap().languages =
+            languages.into_iter().filter(|(_k, v)| v.check()).collect();
     }
 
     let languages_map = state.lock().unwrap().languages.clone();
@@ -64,14 +68,6 @@ pub async fn get_languages(
     }
 
     Ok(languages)
-}
-
-fn check(lang: &String) -> Result<(), ()> {
-    let _ = Command::new(lang)
-        .spawn()
-        .map_err(|_| ())?
-        .wait_timeout(Duration::from_secs(2));
-    Ok(())
 }
 
 #[tauri::command]

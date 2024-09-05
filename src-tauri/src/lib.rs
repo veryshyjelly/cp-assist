@@ -3,6 +3,7 @@ mod judge;
 mod language;
 mod state;
 mod submit;
+mod utils;
 
 use actix_web::{web, App, HttpServer};
 use info::*;

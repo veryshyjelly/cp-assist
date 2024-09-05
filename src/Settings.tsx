@@ -1,7 +1,7 @@
 import { Button, Group, Select, Text, TextInput } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { get_language_dir, get_languages, set_language_dir } from "./commands.tsx";
+import { get_language, get_language_dir, get_languages, set_language_dir } from "./commands.tsx";
 
 const Settings = ({ close }: { close: () => void }) => {
     const [language, setLanguage] = useState("0");
@@ -20,6 +20,7 @@ const Settings = ({ close }: { close: () => void }) => {
 
 
     useEffect(() => {
+        get_language().then(v => onChangeLanguage(v.toString()));
         get_languages().then(v => setLanguages(v.map(x => {
             return { value: x.id.toString(), label: x.name }
         })))

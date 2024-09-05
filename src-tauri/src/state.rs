@@ -1,10 +1,11 @@
 use crate::info::Problem;
 use crate::judge::Verdict;
+use crate::utils::ResultTrait;
 use crate::{file_name, Language};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fs::{create_dir_all, File};
-use std::io::{BufReader, Read, Write};
+use std::fs::{create_dir_all, read, File};
+use std::io::{BufReader, Write};
 use std::ops::Deref;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -96,20 +97,17 @@ pub fn save_state(
     handle: tauri::AppHandle,
     state: State<'_, Mutex<AppState>>,
 ) -> Result<(), String> {
-    let mut file_path = handle
-        .path()
-        .app_config_dir()
-        .map_err(|err| format!("{}", err))?;
+    let mut file_path = handle.path().app_config_dir().map_to_string()?;
     file_path.push("cp_state.json");
 
     let state = state.lock().unwrap().deref().clone();
 
-    let mut f = File::create(file_path).map_err(|err| format!("{}", err))?;
+    let mut f = File::create(file_path).map_to_string()?;
     f.write_fmt(format_args!(
         "{}",
-        serde_json::to_string(&state).map_err(|err| format!("{}", err))?
+        serde_json::to_string(&state).map_to_string()?
     ))
-    .map_err(|err| format!("{}", err))?;
+    .map_to_string()?;
 
     Ok(())
 }
@@ -117,29 +115,24 @@ pub fn save_state(
 #[tauri::command]
 pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), String> {
     let state = app_state.lock().unwrap().clone();
-    let mut file_path = PathBuf::from_str(&state.directory).map_err(|err| format!("{}", err))?;
+    let mut file_path = PathBuf::from_str(&state.directory).map_to_string()?;
     let mut template_path = file_path.clone();
     template_path.push("template");
     file_path.push(state.get_language_dir());
-    create_dir_all(&file_path).map_err(|err| format!("{err}"))?;
+    create_dir_all(&file_path).map_to_string()?;
 
     file_path.push(file_name(&state.problem.title));
     file_path.set_extension(state.get_language()?.get_extension());
     template_path.set_extension(state.get_language()?.get_extension());
-    println!("creating file: {:?}", file_path);
-    let mut f = File::create_new(file_path).map_err(|err| format!("{err}"))?;
+
+    let mut f = File::create_new(file_path).map_to_string()?;
 
     f.write_fmt(format_args!("{}\n", state.problem.url))
-        .map_err(|err| format!("{err}"))?;
+        .map_to_string()?;
 
     if template_path.exists() {
-        let mut template = String::new();
-        File::open(template_path)
-            .map_err(|err| format!("{err}"))?
-            .read_to_string(&mut template)
-            .map_err(|err| format!("{err}"))?;
-        f.write_fmt(format_args!("{}", template))
-            .map_err(|err| format!("{err}"))?;
+        f.write(&read(template_path).map_to_string()?)
+            .map_to_string()?;
     }
 
     Ok(())

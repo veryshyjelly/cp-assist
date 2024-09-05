@@ -1,10 +1,10 @@
-use std::{fs::File, io::Read, path::PathBuf, str::FromStr, sync::Mutex};
+use std::{fs::read_to_string, path::PathBuf, str::FromStr, sync::Mutex};
 
 use actix_web::{get, post, web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use tauri_plugin_http::reqwest;
 
-use crate::{file_name, AppState};
+use crate::{file_name, utils::ResultTrait, AppState};
 
 pub struct WebState {
     pub sol: Mutex<Option<Solution>>,
@@ -31,45 +31,40 @@ pub async fn get_submit(data: web::Data<WebState>) -> impl Responder {
 
     if sol.is_some() {
         let solution = sol.unwrap();
+
+        #[cfg(debug_assertions)]
         println!("submitting solution");
+
         return HttpResponse::Ok().json(solution);
     }
 
+    #[cfg(debug_assertions)]
     println!("no solution returning empty");
+
     HttpResponse::Ok().json(EmptySolution { empty: true })
 }
 
 #[post("/submit")]
 pub async fn post_submit(sol: web::Json<Solution>, data: web::Data<WebState>) -> impl Responder {
     let _ = data.sol.lock().unwrap().insert(sol.0);
+
+    #[cfg(debug_assertions)]
     println!("inserted solution into data");
+
     HttpResponse::Ok()
 }
 
 #[tauri::command]
 pub async fn submit_solution(app_state: tauri::State<'_, Mutex<AppState>>) -> Result<(), String> {
     let state = app_state.lock().unwrap().clone();
-    let mut file_path = PathBuf::from_str(&state.directory).map_err(|err| format!("{err}"))?;
-    file_path.push(
-        state
-            .language_dir
-            .get(&state.language_id)
-            .unwrap_or(&"".into()),
-    );
-
+    let mut file_path = PathBuf::from_str(&state.directory).map_to_string()?;
+    file_path.push(state.get_language_dir());
     file_path.push(file_name(&state.problem.title));
     file_path.set_extension(state.get_language()?.get_extension());
 
-    let mut source_code = String::new();
+    let source_code = read_to_string(file_path).map_to_string()?;
 
-    File::open(file_path)
-        .map_err(|err| format!("{err}"))?
-        .read_to_string(&mut source_code)
-        .map_err(|err| format!("{err}"))?;
-
-    let client = reqwest::Client::builder()
-        .build()
-        .map_err(|err| format!("{err}"))?;
+    let client = reqwest::Client::builder().build().map_to_string()?;
 
     let problem_name = state
         .problem
@@ -85,26 +80,19 @@ pub async fn submit_solution(app_state: tauri::State<'_, Mutex<AppState>>) -> Re
 
     let solution = Solution {
         empty: false,
-        language_id: state
-            .languages
-            .get(&state.language_id.to_string())
-            .ok_or(format!("language not found on codeforces"))?
-            .cf_id,
+        language_id: state.get_language().map_to_string()?.cf_id,
         problem_name,
         source_code,
         url: state.problem.url,
     };
 
     let post_request = client
-        .post("http:/localhost:27121/submit")
+        .post("http://localhost:27121/submit")
         .json(&solution)
         .build()
-        .map_err(|err| format!("{err}"))?;
+        .map_to_string()?;
 
-    client
-        .execute(post_request)
-        .await
-        .map_err(|err| format!("{err}"))?;
+    client.execute(post_request).await.map_to_string()?;
 
     Ok(())
 }
