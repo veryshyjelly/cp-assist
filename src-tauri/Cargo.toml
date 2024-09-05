@@ -1,5 +1,5 @@
 [package]
-name = "cp"
+name = "cp-assist"
 version = "0.2.1"
 description = "A Competitive Programming assistant"
 authors = ["Ayush Biswas"]
@@ -24,6 +24,7 @@ actix-web = "4.9.0"
 tauri-plugin-http = "2.0.0-rc.0"
 toml = { version = "0.8.19", features = ["preserve_order"] }
 wait-timeout = "0.2.0"
+open = "5.3.0"
 
 [dependencies.uuid]
 version = "1.10.0"

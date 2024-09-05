@@ -18,6 +18,8 @@ pub struct AppState {
     pub language_id: usize,
     #[serde(default)]
     pub language_dir: HashMap<usize, String>,
+    #[serde(default)]
+    pub open_with: String,
     #[serde(default, skip_serializing)]
     pub languages: HashMap<String, Language>,
     #[serde(default, skip_serializing)]
@@ -93,6 +95,16 @@ pub fn set_verdicts(verdicts: Vec<Verdict>, state: State<'_, Mutex<AppState>>) {
 }
 
 #[tauri::command]
+pub fn get_open_with(state: State<'_, Mutex<AppState>>) -> String {
+    state.lock().unwrap().open_with.clone()
+}
+
+#[tauri::command]
+pub fn set_open_with(open_with: String, state: State<'_, Mutex<AppState>>) {
+    state.lock().unwrap().open_with = open_with
+}
+
+#[tauri::command]
 pub fn save_state(
     handle: tauri::AppHandle,
     state: State<'_, Mutex<AppState>>,
@@ -125,7 +137,12 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
     file_path.set_extension(state.get_language()?.get_extension());
     template_path.set_extension(state.get_language()?.get_extension());
 
-    let mut f = File::create_new(file_path).map_to_string()?;
+    if file_path.exists() && !state.open_with.is_empty() {
+        open::with(&file_path, state.open_with).map_to_string()?;
+        return Ok(());
+    }
+
+    let mut f = File::create_new(&file_path).map_to_string()?;
 
     f.write_fmt(format_args!("{}\n", state.problem.url))
         .map_to_string()?;
@@ -133,6 +150,10 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
     if template_path.exists() {
         f.write(&read(template_path).map_to_string()?)
             .map_to_string()?;
+    }
+
+    if !state.open_with.is_empty() {
+        open::with(&file_path, state.open_with).map_to_string()?;
     }
 
     Ok(())

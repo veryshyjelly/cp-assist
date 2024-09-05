@@ -78,9 +78,9 @@ const Home = ({ problem, verdicts }: { problem: Problem | null, verdicts: Verdic
             </Text>
         </Flex>
 
-        <Stack c={"white"} w={"95%"} mt={"10"} mx={"auto"} px={40} className={"text-2xl h-full rounded-md"}>
+        <Stack c={"white"} w={"95%"} mx={"auto"} px={40} className={"text-2xl h-full rounded-md"}>
             {/*Heading Area*/}
-            <Group my={5}>
+            <Group my={0}>
                 <Select
                     variant="unstyled"
                     onChange={onCaseChange}

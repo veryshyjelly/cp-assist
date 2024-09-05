@@ -4,12 +4,14 @@ source_file = "main.asm"
 compiler_cmd = "nasmld"
 compiler_args = ["-f", "elf64", "main.asm"]
 run_cmd = "./a.out"
+check_args = ["-v"]
 
 [2]
 name = "Bash"
 source_file = "script.sh"
 run_cmd = "bash"
 run_args = ["script.sh"]
+check_args = ["--version"]
 
 [3]
 cf_id = 43
@@ -18,6 +20,7 @@ source_file = "main.c"
 compiler_cmd = "gcc"
 compiler_args = ["-fmax-errors=10", "-lm", "-Wall", "-O2", "main.c"]
 run_cmd = "./a.out"
+check_args = ["--version"]
 
 [4]
 cf_id = 91
@@ -26,6 +29,7 @@ source_file = "main.cpp"
 compiler_cmd = "g++"
 compiler_args = ["-fmax-errors=10", "-lm", "-Wall", "-O2", "main.cpp"]
 run_cmd = "./a.out"
+check_args = ["--version"]
 
 [5]
 cf_id = 9
@@ -34,12 +38,14 @@ source_file = "Main.cs"
 compiler_cmd = "mcs"
 compiler_args = ["Main.cs"]
 run_cmd = "mono Main.exe"
+check_args = ["-V"]
 
 [6]
 name = "SBCL"
 source_file = "script.lisp"
 run_cmd = "sbcl"
 run_args = ["--script", "script.lisp"]
+check_args = ["--version"]
 
 [7]
 cf_id = 28
@@ -48,18 +54,21 @@ source_file = "main.d"
 compiler_cmd = "dmd"
 compiler_args = ["main.d"]
 run_cmd = "./main"
+check_args = ["--version"]
 
 [8]
 name = "Elixir"
 source_file = "script.exs"
 run_cmd = "elixir"
 run_args = ["script.exs"]
+check_args = ["--version"]
 
 [9]
 name = "Erlang/OTP 27"
 source_file = "main.erl"
 run_cmd = "escript"
 run_args = ["main.erl"]
+check_args = ["--version"]
 
 [10]
 name = "Fortran (Gfortran)"
@@ -67,6 +76,7 @@ source_file = "main.f90"
 compiler_cmd = "gfortran"
 compiler_args = ["main.f90"]
 run_cmd = "./a.out"
+check_args = ["--version"]
 
 [11]
 cf_id = 32
@@ -75,6 +85,7 @@ source_file = "main.go"
 compiler_cmd = "go"
 compiler_args = ["build", "main.go"]
 run_cmd = "./main"
+check_args = ["version"]
 
 [12]
 cf_id = 12
@@ -83,6 +94,7 @@ source_file = "main.hs"
 compiler_cmd = "ghc"
 compiler_args = ["-dynamic", "main.hs"]
 run_cmd = "./main"
+check_args = ["--version"]
 
 [13]
 cf_id = 87
@@ -92,6 +104,7 @@ compiler_cmd = "javac"
 compiler_args = ["Main.java"]
 run_cmd = "java"
 run_args = ["Main"]
+check_args = ["--version"]
 
 [14]
 cf_id = 55
@@ -101,6 +114,7 @@ compiler_cmd = "node"
 compiler_args = ["-c", "script.js"]
 run_cmd = "node"
 run_args = ["script.js"]
+check_args = ["--version"]
 
 [15]
 name = "Lua"
@@ -109,6 +123,7 @@ compiler_cmd = "lua"
 compiler_args = ["script.lua"]
 run_cmd = "lua"
 run_args = ["./luac.out"]
+check_args = ["-v"]
 
 [16]
 cf_id = 19
@@ -117,12 +132,14 @@ source_file = "main.ml"
 compiler_cmd = "ocamlc"
 compiler_args = ["main.ml"]
 run_cmd = "./a.out"
+check_args = ["--version"]
 
 [17]
 name = "Octave"
 source_file = "script.m"
 run_cmd = "octave-cli"
 run_args = ["-q", "--no-gui", "--no-history", "script.m"]
+check_args = ["--version"]
 
 [18]
 cf_id = 4
@@ -131,6 +148,7 @@ source_file = "main.pas"
 compiler_cmd = "fpc"
 compiler_args = ["main.pas"]
 run_cmd = "./main"
+check_args = ["-iW"]
 
 [19]
 cf_id = 6
@@ -138,6 +156,7 @@ name = "PHP"
 source_file = "script.php"
 run_cmd = "php"
 run_args = ["script.php"]
+check_args = ["-v"]
 
 [20]
 cf_id = 31
@@ -147,6 +166,7 @@ compiler_cmd = "python3"
 compiler_args = ["-m", "py_compile", "script.py"]
 run_cmd = "python3"
 run_args = ["script.py"]
+check_args = ["--version"]
 
 [21]
 cf_id = 67
@@ -156,6 +176,7 @@ compiler_cmd = "ruby"
 compiler_args = ["-c", "script.rb"]
 run_cmd = "ruby"
 run_args = ["script.rb"]
+check_args = ["--version"]
 
 [22]
 cf_id = 75
@@ -164,6 +185,7 @@ source_file = "main.rs"
 compiler_cmd = "rustc"
 compiler_args = ["-O", "main.rs"]
 run_cmd = "./main"
+check_args = ["-V"]
 
 [23]
 name = "Typescript"
@@ -172,6 +194,7 @@ compiler_cmd = "tsc"
 compiler_args = ["script.ts"]
 run_cmd = "node"
 run_args = ["script.js"]
+check_args = ["--version"]
 
 [24]
 cf_id = 43
@@ -180,6 +203,7 @@ source_file = "main.c"
 compiler_cmd = "clang"
 compiler_args = ["-O2", "main.c"]
 run_cmd = "./a.out"
+check_args = ["--version"]
 
 [25]
 cf_id = 89
@@ -188,6 +212,7 @@ source_file = "main.cpp"
 compiler_cmd = "clang++"
 compiler_args = ["-O2", "main.cpp"]
 run_cmd = "./a.out"
+check_args = ["--version"]
 
 [26]
 cf_id = 88
@@ -197,12 +222,14 @@ compiler_cmd = "kotlinc"
 compiler_args = ["Main.kt"]
 run_cmd = "kotlin"
 run_args = ["MainKT"]
+check_args = ["-version"]
 
 [27]
 name = "R"
 source_file = "script.r"
 run_cmd = "Rscript"
 run_args = ["script.r"]
+check_args = ["--version"]
 
 [28]
 cf_id = 20
@@ -212,6 +239,7 @@ compiler_cmd = "scalac"
 compiler_args = ["Main.scala"]
 run_cmd = "scala"
 run_args = ["Main"]
+check_args = ["--version"]
 
 [29]
 name = "Visual Basic.Net (vbnc)"
@@ -220,6 +248,7 @@ compiler_cmd = "vbnc"
 compiler_args = ["Main.vb"]
 run_cmd = "mono"
 run_args = ["Main.exe"]
+check_args = ["-V"]
 
 [30]
 cf_id = 13
@@ -227,18 +256,21 @@ name = "Perl"
 source_file = "script.pl"
 run_cmd = "perl"
 run_args = ["script.pl"]
+check_args = ["--version"]
 
 [31]
 name = "Clojure"
 source_file = "main.clj"
 run_cmd = "clojure"
 run_args = ["-M", "main.clj"]
+check_args = ["--version"]
 
 [32]
 name = "F#"
 source_file = "script.fsx"
 run_cmd = "dotnet"
 run_args = ["fsi", "script.fsx"]
+check_args = ["--version"]
 
 [33]
 name = "Groovy"
@@ -247,3 +279,4 @@ compiler_cmd = "groovyc"
 compiler_args = ["script.groovy"]
 run_cmd = "groovy"
 run_args = ["script"]
+check_args = ["--version"]

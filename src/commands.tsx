@@ -187,6 +187,40 @@ export const get_verdicts = async () => {
     }
 };
 
+export const set_open_with = async (open_with: string) => {
+    try {
+        await invoke("set_open_with", { openWith: open_with });
+        return true;
+    } catch (e) {
+        console.log(e);
+        notifications.show({
+            id: "directory_not_set",
+            title: "Application not set",
+            message: "The specified application was not set",
+            icon: <IconX size="1.1rem" />,
+            color: "red",
+        });
+        return false;
+    }
+};
+
+export const get_open_with = async () => {
+    try {
+        return await invoke("get_open_with") as string;
+    } catch (e) {
+        console.error(e);
+        notifications.show({
+            id: "cannot_get_directory",
+            message: "Cannot get the open with application",
+            icon: <IconX size="1.1rem" />,
+            color: "red",
+        });
+        return "";
+    }
+};
+
+
+
 export const run = async () => {
     try {
         return (await invoke("test")) as null;

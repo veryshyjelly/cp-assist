@@ -1,12 +1,13 @@
 import { Button, Group, Select, Text, TextInput } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { get_language, get_language_dir, get_languages, set_language_dir } from "./commands.tsx";
+import { get_language, get_language_dir, get_languages, get_open_with, set_language_dir, set_open_with } from "./commands.tsx";
 
 const Settings = ({ close }: { close: () => void }) => {
     const [language, setLanguage] = useState("0");
     const [languages, setLanguages] = useState<{ value: string, label: string }[]>([]);
     const [defaultDir, setDefaultDir] = useState("");
+    const [openApplication, setOpenApplication] = useState("");
 
     const onChangeLanguage = (v: string | null) => {
         if (v === null) return;
@@ -18,8 +19,13 @@ const Settings = ({ close }: { close: () => void }) => {
         set_language_dir(parseInt(language), defaultDir).then(() => close())
     }
 
+    const onSaveOpenApp = () => {
+        set_open_with(openApplication).then(() => close());
+    }
+
 
     useEffect(() => {
+        get_open_with().then(v => setOpenApplication(v));
         get_language().then(v => onChangeLanguage(v.toString()));
         get_languages().then(v => setLanguages(v.map(x => {
             return { value: x.id.toString(), label: x.name }
@@ -41,6 +47,13 @@ const Settings = ({ close }: { close: () => void }) => {
             />
             <TextInput value={defaultDir} onChange={(event) => setDefaultDir(event.currentTarget.value)} />
             <Button onClick={onSaveDir}>
+                Save
+            </Button>
+        </Group>
+        <Text mt={20} mb={2} c={"#acacac"}>Set application to open the file</Text>
+        <Group>
+            <TextInput value={openApplication} w={"80%"} onChange={(event) => setOpenApplication(event.currentTarget.value)} />
+            <Button onClick={onSaveOpenApp} ml={"auto"}>
                 Save
             </Button>
         </Group>

@@ -67,6 +67,8 @@ pub fn run() {
             set_problem,
             get_verdicts,
             set_verdicts,
+            get_open_with,
+            set_open_with
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

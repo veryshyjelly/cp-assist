@@ -22,6 +22,8 @@ pub struct Language {
     pub run_cmd: String,
     #[serde(skip_serializing)]
     pub run_args: Vec<String>,
+    #[serde(skip_serializing)]
+    pub check_args: Vec<String>,
 }
 
 impl Language {
@@ -30,7 +32,10 @@ impl Language {
     }
 
     pub fn check(&self) -> bool {
-        if let Ok(mut o) = Command::new(&self.compiler_cmd).spawn() {
+        if let Ok(mut o) = Command::new(&self.compiler_cmd)
+            .args(&self.check_args)
+            .spawn()
+        {
             let _ = o.wait_timeout(Duration::from_secs(2));
             true
         } else {
