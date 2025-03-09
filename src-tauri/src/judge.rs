@@ -4,12 +4,15 @@ use crate::{file_name, Language};
 use serde::{Deserialize, Serialize};
 use std::fs::{self, create_dir_all, remove_dir_all};
 use std::io::Write;
+use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::sync::Mutex;
 use tauri::{Emitter, State};
 use uuid::Uuid;
+
+const CREATE_NO_WINDOW: u32 = 0x08000000; // Prevents opening a new window
 
 #[derive(Serialize, Deserialize, Clone, Default)]
 pub struct Verdict {
@@ -87,6 +90,10 @@ fn compile(language: &Language, dir: &Path) -> Result<bool, String> {
     let output = Command::new(&language.compiler_cmd)
         .current_dir(dir)
         .args(&language.compiler_args)
+        .creation_flags(CREATE_NO_WINDOW)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .output()
         .map_to_string()?;
 
@@ -110,10 +117,31 @@ fn run_all(
     Ok(res)
 }
 
+fn resolve_command_path(dir: &Path, command: &str) -> PathBuf {
+    if command.starts_with("./") || command.starts_with(".\\") {
+        dir.join(&command[2..]) // Remove "./" or ".\\" and join with dir
+    } else {
+        PathBuf::from(command) // Use command as-is if it's not relative
+    }
+}
+
 fn run(language: &Language, dir: &Path, mut verdict: Verdict) -> Result<Verdict, String> {
-    let mut child = Command::new(&language.run_cmd)
+    println!("dir: {}", dir.to_str().unwrap());
+    let mut run_cmd = &language.run_cmd;
+
+    #[cfg(target_os = "windows")]
+    {
+        if !language.run_cmd_win.is_empty() {
+            run_cmd = &language.run_cmd_win;
+        }
+    }
+
+    println!("run_cmd: {}", run_cmd);
+
+    let mut child = Command::new(resolve_command_path(dir, run_cmd))
         .current_dir(dir)
         .args(&language.run_args)
+        .creation_flags(CREATE_NO_WINDOW)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

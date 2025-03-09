@@ -1,10 +1,17 @@
 use crate::{state::AppState, utils::ResultTrait};
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap, fs::read_to_string, process::Command, sync::Mutex, time::Duration,
+    collections::HashMap,
+    fs::read_to_string,
+    os::windows::process::CommandExt,
+    process::{Command, Stdio},
+    sync::Mutex,
+    time::Duration,
 };
 use tauri::{path::BaseDirectory, Manager, State};
 use wait_timeout::ChildExt;
+
+const CREATE_NO_WINDOW: u32 = 0x08000000; // Prevents opening a new window
 
 #[derive(Serialize, Deserialize, Clone, Default)]
 #[serde(default)]
@@ -21,9 +28,13 @@ pub struct Language {
     #[serde(skip_serializing)]
     pub run_cmd: String,
     #[serde(skip_serializing)]
+    pub run_cmd_win: String,
+    #[serde(skip_serializing)]
     pub run_args: Vec<String>,
     #[serde(skip_serializing)]
     pub check_args: Vec<String>,
+    #[serde(skip_serializing)]
+    pub comment: String,
 }
 
 impl Language {
@@ -32,8 +43,18 @@ impl Language {
     }
 
     pub fn check(&self) -> bool {
-        if let Ok(mut o) = Command::new(&self.compiler_cmd)
+        let cmd = if self.compiler_cmd.is_empty() {
+            &self.run_cmd
+        } else {
+            &self.compiler_cmd
+        };
+
+        if let Ok(mut o) = Command::new(cmd)
             .args(&self.check_args)
+            .creation_flags(CREATE_NO_WINDOW)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
             .spawn()
         {
             let _ = o.wait_timeout(Duration::from_secs(2));

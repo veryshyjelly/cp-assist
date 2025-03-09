@@ -73,15 +73,17 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
 fn show_window(app: &AppHandle) {
     let windows = app.webview_windows();
 
-    windows
-        .values()
-        .next()
-        .expect("Sorry, no window found")
-        .set_focus()
-        .expect("Can't Bring Window to Focus");
+    if let Some(window) = windows.values().next() {
+        window.set_skip_taskbar(false).unwrap(); // ✅ Ensure it appears in taskbar
+        window.show().unwrap(); // ✅ Make sure the window is visible
+        window.set_focus().unwrap(); // ✅ Bring it to front
+    } else {
+        panic!("Sorry, no window found");
+    }
 }
 
 pub fn file_name(title: &String) -> String {

@@ -7,10 +7,14 @@ use std::collections::HashMap;
 use std::fs::{create_dir_all, read, File};
 use std::io::{BufReader, Write};
 use std::ops::Deref;
+use std::os::windows::process::CommandExt;
 use std::path::PathBuf;
+use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::sync::Mutex;
 use tauri::{Manager, State};
+
+const CREATE_NO_WINDOW: u32 = 0x08000000; // Prevents opening a new window
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct AppState {
@@ -138,14 +142,27 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
     template_path.set_extension(state.get_language()?.get_extension());
 
     if file_path.exists() && !state.open_with.is_empty() {
-        open::with(&file_path, state.open_with).map_to_string()?;
+        let c = Command::new(state.open_with)
+            .args(&[file_path.as_os_str()])
+            .creation_flags(CREATE_NO_WINDOW)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_to_string()?;
+        println!("stderr: {:?}", c.stderr);
+        println!("stdout: {:?}", c.stdout);
         return Ok(());
     }
 
     let mut f = File::create_new(&file_path).map_to_string()?;
 
-    f.write_fmt(format_args!("{}\n", state.problem.url))
-        .map_to_string()?;
+    f.write_fmt(format_args!(
+        "{} {}\n",
+        state.get_language()?.comment,
+        state.problem.url
+    ))
+    .map_to_string()?;
 
     if template_path.exists() {
         f.write(&read(template_path).map_to_string()?)
