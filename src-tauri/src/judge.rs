@@ -143,7 +143,7 @@ fn resolve_command_path(dir: &Path, command: &str) -> PathBuf {
 
 fn run(language: &Language, dir: &Path, mut verdict: Verdict) -> Result<Verdict, String> {
     println!("dir: {}", dir.to_str().unwrap());
-    let mut run_cmd = &language.run_cmd;
+    let run_cmd = &language.run_cmd;
 
     #[cfg(target_os = "windows")]
     {

@@ -22,15 +22,18 @@
           pname = "cp-assist";
           version = "0.1.0";
           src = ./.;
+
+          # Fix the Cargo.lock issue by pointing to the correct location
+          postPatch = ''
+            ln -s ${./src-tauri/Cargo.lock} Cargo.lock
+          '';
+
+          # Use pre-downloaded pnpm dependencies
+          npmDeps = ./pnpmDeps.tar.gz;
+
           cargoLock.lockFile = ./src-tauri/Cargo.lock;
 
           nativeBuildInputs = with pkgs; [
-            pkg-config
-            nodejs
-            nodePackages.pnpm
-          ];
-
-          buildInputs = with pkgs; [
             gcc
             rustc
             cargo
@@ -39,6 +42,9 @@
             pnpm
             nodejs_22
             pkg-config
+          ];
+
+          buildInputs = with pkgs; [
             gobject-introspection
             at-spi2-atk
             atkmm
@@ -55,11 +61,9 @@
           ];
 
           buildPhase = ''
-            # Install pnpm dependencies
-            pnpm install
-
+            tar -xzf $npmDeps -C .
             # Build the Tauri app
-            pnpm tauri build
+            pnpm --offline tauri build
           '';
 
           installPhase = ''
@@ -111,50 +115,3 @@
       }
     );
 }
-
-# let pkgs = import <nixpkgs> { }; in
-# pkgs.mkShell {
-#   nativeBuildInputs = with pkgs; [
-#     gcc
-#     rustc
-#     cargo
-#     cargo-tauri
-#     rustfmt
-#     pnpm
-#     nodejs_22
-#   ];
-#   buildInputs = with pkgs; [
-#     pkg-config
-#     gobject-introspection
-#     at-spi2-atk
-#     atkmm
-#     cairo
-#     gdk-pixbuf
-#     glib
-#     gtk3
-#     harfbuzz
-#     librsvg
-#     libsoup_3
-#     pango
-#     webkitgtk_4_1
-#     openssl
-#   ];
-
-#   # Important for runtime library discovery
-#   shellHook = ''
-#     export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath [
-#       pkgs.at-spi2-atk
-#       pkgs.atkmm
-#       pkgs.cairo
-#       pkgs.gdk-pixbuf
-#       pkgs.glib
-#       pkgs.gtk3
-#       pkgs.harfbuzz
-#       pkgs.librsvg
-#       pkgs.libsoup_3
-#       pkgs.pango
-#       pkgs.webkitgtk_4_1
-#       pkgs.openssl
-#     ]}:$LD_LIBRARY_PATH
-#   '';
-# }

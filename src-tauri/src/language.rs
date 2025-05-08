@@ -46,36 +46,36 @@ impl Language {
     }
 
     pub fn check(&self) -> bool {
-           let cmd = if self.compiler_cmd.is_empty() {
-               &self.run_cmd
-           } else {
-               &self.compiler_cmd
-           };
+        let cmd = if self.compiler_cmd.is_empty() {
+            &self.run_cmd
+        } else {
+            &self.compiler_cmd
+        };
 
-           #[cfg(windows)]
-           let result = Command::new(cmd)
-               .args(&self.check_args)
-               .creation_flags(CREATE_NO_WINDOW)
-               .stdin(Stdio::piped())
-               .stdout(Stdio::piped())
-               .stderr(Stdio::piped())
-               .spawn();
+        #[cfg(windows)]
+        let result = Command::new(cmd)
+            .args(&self.check_args)
+            .creation_flags(CREATE_NO_WINDOW)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn();
 
-           #[cfg(unix)]
-           let result = Command::new(cmd)
-               .args(&self.check_args)
-               .stdin(Stdio::piped())
-               .stdout(Stdio::piped())
-               .stderr(Stdio::piped())
-               .spawn();
+        #[cfg(unix)]
+        let result = Command::new(cmd)
+            .args(&self.check_args)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn();
 
-           if let Ok(mut o) = result {
-               let _ = o.wait_timeout(Duration::from_secs(2));
-               true
-           } else {
-               false
-           }
-       }
+        if let Ok(mut o) = result {
+            let _ = o.wait_timeout(Duration::from_secs(2));
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[tauri::command]
@@ -84,16 +84,16 @@ pub async fn get_languages(
     handle: tauri::AppHandle,
 ) -> Result<Vec<Language>, String> {
     if state.lock().unwrap().languages.is_empty() {
+        let path = handle
+            .path()
+            .resolve("Languages.toml", BaseDirectory::Resource)
+            .map_to_string_mess("Languages.toml not found".into())?;
+
         let languages: HashMap<String, Language> = toml::from_str(
-            &read_to_string(
-                handle
-                    .path()
-                    .resolve("Languages.toml", BaseDirectory::Resource)
-                    .map_to_string()?,
-            )
-            .map_to_string()?,
+            &read_to_string(path.clone())
+                .map_to_string_mess(format!("Error while reading toml file {path:?}"))?,
         )
-        .map_to_string()?;
+        .map_to_string_mess("Error while parsing toml".into())?;
         state.lock().unwrap().languages =
             languages.into_iter().filter(|(_k, v)| v.check()).collect();
     }
