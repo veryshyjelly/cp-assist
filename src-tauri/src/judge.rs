@@ -4,7 +4,6 @@ use crate::{file_name, Language};
 use serde::{Deserialize, Serialize};
 use std::fs::{self, create_dir_all, remove_dir_all};
 use std::io::Write;
-use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::str::FromStr;
@@ -12,6 +11,11 @@ use std::sync::Mutex;
 use tauri::{Emitter, State};
 use uuid::Uuid;
 
+// Windows-specific imports
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
+#[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x08000000; // Prevents opening a new window
 
 #[derive(Serialize, Deserialize, Clone, Default)]
@@ -87,10 +91,21 @@ fn compile(language: &Language, dir: &Path) -> Result<bool, String> {
         return Ok(true);
     }
 
+    #[cfg(windows)]
     let output = Command::new(&language.compiler_cmd)
         .current_dir(dir)
         .args(&language.compiler_args)
         .creation_flags(CREATE_NO_WINDOW)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .map_to_string()?;
+
+    #[cfg(not(windows))]
+    let output = Command::new(&language.compiler_cmd)
+        .current_dir(dir)
+        .args(&language.compiler_args)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -118,6 +133,7 @@ fn run_all(
 }
 
 fn resolve_command_path(dir: &Path, command: &str) -> PathBuf {
+    // Handle both Unix and Windows style relative paths
     if command.starts_with("./") || command.starts_with(".\\") {
         dir.join(&command[2..]) // Remove "./" or ".\\" and join with dir
     } else {
@@ -138,10 +154,22 @@ fn run(language: &Language, dir: &Path, mut verdict: Verdict) -> Result<Verdict,
 
     println!("run_cmd: {}", run_cmd);
 
+    // Create command with platform-specific options
+    #[cfg(windows)]
     let mut child = Command::new(resolve_command_path(dir, run_cmd))
         .current_dir(dir)
         .args(&language.run_args)
         .creation_flags(CREATE_NO_WINDOW)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .map_to_string()?;
+
+    #[cfg(not(windows))]
+    let mut child = Command::new(resolve_command_path(dir, run_cmd))
+        .current_dir(dir)
+        .args(&language.run_args)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

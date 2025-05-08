@@ -87,7 +87,7 @@ fn show_window(app: &AppHandle) {
 }
 
 pub fn file_name(title: &String) -> String {
-    let mut x: Vec<_> = title.split('.').collect();
+    let mut x: Vec<_> = title.split(|c: char| !c.is_alphanumeric()).collect();
     x.split_off(1)
         .join("")
         .split(" ")

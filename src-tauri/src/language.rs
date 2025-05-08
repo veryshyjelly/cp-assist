@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
     fs::read_to_string,
-    os::windows::process::CommandExt,
     process::{Command, Stdio},
     sync::Mutex,
     time::Duration,
@@ -11,6 +10,10 @@ use std::{
 use tauri::{path::BaseDirectory, Manager, State};
 use wait_timeout::ChildExt;
 
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
+#[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x08000000; // Prevents opening a new window
 
 #[derive(Serialize, Deserialize, Clone, Default)]
@@ -43,26 +46,36 @@ impl Language {
     }
 
     pub fn check(&self) -> bool {
-        let cmd = if self.compiler_cmd.is_empty() {
-            &self.run_cmd
-        } else {
-            &self.compiler_cmd
-        };
+           let cmd = if self.compiler_cmd.is_empty() {
+               &self.run_cmd
+           } else {
+               &self.compiler_cmd
+           };
 
-        if let Ok(mut o) = Command::new(cmd)
-            .args(&self.check_args)
-            .creation_flags(CREATE_NO_WINDOW)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-        {
-            let _ = o.wait_timeout(Duration::from_secs(2));
-            true
-        } else {
-            false
-        }
-    }
+           #[cfg(windows)]
+           let result = Command::new(cmd)
+               .args(&self.check_args)
+               .creation_flags(CREATE_NO_WINDOW)
+               .stdin(Stdio::piped())
+               .stdout(Stdio::piped())
+               .stderr(Stdio::piped())
+               .spawn();
+
+           #[cfg(unix)]
+           let result = Command::new(cmd)
+               .args(&self.check_args)
+               .stdin(Stdio::piped())
+               .stdout(Stdio::piped())
+               .stderr(Stdio::piped())
+               .spawn();
+
+           if let Ok(mut o) = result {
+               let _ = o.wait_timeout(Duration::from_secs(2));
+               true
+           } else {
+               false
+           }
+       }
 }
 
 #[tauri::command]

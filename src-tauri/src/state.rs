@@ -7,13 +7,17 @@ use std::collections::HashMap;
 use std::fs::{create_dir_all, read, File};
 use std::io::{BufReader, Write};
 use std::ops::Deref;
-use std::os::windows::process::CommandExt;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::sync::Mutex;
 use tauri::{Manager, State};
 
+// Windows-specific imports
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+
+#[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x08000000; // Prevents opening a new window
 
 #[derive(Default, Serialize, Deserialize, Clone)]
@@ -142,6 +146,7 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
     template_path.set_extension(state.get_language()?.get_extension());
 
     if file_path.exists() && !state.open_with.is_empty() {
+        #[cfg(windows)]
         let c = Command::new(state.open_with)
             .args(&[file_path.as_os_str()])
             .creation_flags(CREATE_NO_WINDOW)
@@ -150,6 +155,16 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
             .stderr(Stdio::piped())
             .spawn()
             .map_to_string()?;
+
+        #[cfg(not(windows))]
+        let c = Command::new(state.open_with)
+            .args(&[file_path.as_os_str()])
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .map_to_string()?;
+
         println!("stderr: {:?}", c.stderr);
         println!("stdout: {:?}", c.stdout);
         return Ok(());
