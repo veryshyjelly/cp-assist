@@ -6,8 +6,14 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
       in
@@ -25,11 +31,27 @@
           ];
 
           buildInputs = with pkgs; [
-            openssl
+            gcc
+            rustc
+            cargo
+            cargo-tauri
+            rustfmt
+            pnpm
+            nodejs_22
+            pkg-config
+            gobject-introspection
+            at-spi2-atk
+            atkmm
+            cairo
+            gdk-pixbuf
+            glib
             gtk3
-            webkitgtk
-            libappindicator
+            harfbuzz
             librsvg
+            libsoup_3
+            pango
+            webkitgtk_4_1
+            openssl
           ];
 
           buildPhase = ''
@@ -54,17 +76,30 @@
         };
 
         devShell = pkgs.mkShell {
-          buildInputs = with pkgs; [
+          nativeBuildInputs = with pkgs; [
+            gcc
             rustc
             cargo
-            nodejs
-            nodePackages.pnpm
+            cargo-tauri
+            rustfmt
+            pnpm
+            nodejs_22
+          ];
+          buildInputs = with pkgs; [
             pkg-config
-            openssl
+            gobject-introspection
+            at-spi2-atk
+            atkmm
+            cairo
+            gdk-pixbuf
+            glib
             gtk3
-            webkitgtk
-            libappindicator
+            harfbuzz
             librsvg
+            libsoup_3
+            pango
+            webkitgtk_4_1
+            openssl
           ];
 
           shellHook = ''
