@@ -1,131 +1,75 @@
-# CP-Assist: Competitive Programming Workflow Assistant
+# CP-Assist
 
-![CP-Assist Banner](https://raw.githubusercontent.com/tsych0/cp-assist/main/src-tauri/icons desktop application designed to streamline your competitive programming workflow. It integrates with popular tools like competitive-companion and cph-submit to automate test case management, code execution, and solution submission, allowing you to focus on solving problems rather than managing infrastructure.
+CP-Assist is a comprehensive desktop application designed to streamline your competitive programming workflow, integrating with popular tools to automate test case management, code execution, and solution submission.
 
-## ✨ Features
+## Table of Contents
+- [App Preview](#app-preview)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Configuration](#configuration)
 
-### Problem Management
-- **Automatic Problem Parsing**: Integrates with competitive-companion to receive problem details directly from online judges
-- **Organized Storage**: Keeps track of problem names, groups, URLs, and constraints
-- **Interactive Problem Support**: Handles special interactive problem types
+## App Preview
 
-### Test Case Handling
-- **Automated Test Collection**: Automatically stores test cases from problems
-- **Input/Output Management**: Organizes test data for verification
-- **Multiple Test Support**: Handles multiple test cases per problem
 
-### Code Execution & Judging
-- **Local Testing Environment**: Run and test your solutions locally before submission
-- **Verdict Generation**: Get immediate feedback with verdicts (AC, WA, TLE, MLE, etc.)
-- **Performance Monitoring**: Track runtime and memory usage of your solutions
+![alt text](https://github.com/veryshyjelly/cp-assist/blob/main/cp-assist-shot.png?raw=true)
 
-### Language Support
-- **Multi-language Compatibility**: Support for various programming languages
-- **Custom Configuration**: Customize language settings through Languages.toml
-- **Language-specific Compilation**: Handles different compilation and execution requirements
+https://github.com/user-attachments/assets/516eacd3-817e-4e87-bcbf-0817f914553f
 
-### Submission System
-- **Online Judge Integration**: Submit directly to online judges via cph-submit
-- **Submission Tracking**: Keep track of your submissions
-- **Cross-platform Support**: Works on both Windows and Linux
+- **Test Case Handling**: Automated collection and management of test cases
+- **Code Execution & Judging**: Local testing environment with verdict generation
+- **Language Support**: Multi-language compatibility with customizable configurations
+- **Submission System**: Direct integration with online judges for solution submission
 
-## 🚀 Getting Started
+## Installation
 
-### Installation
-
-#### Prerequisites
+### Prerequisites
 - [Competitive Companion](https://github.com/jmerle/competitive-companion) browser extension
+- [CP-Submit](https://github.com/tsycho/cp-submit) for submission integration
 
-#### Windows
-1. Download the latest release from the [Releases page](https://github.com/tsych0/cp-assist/releases)
-2. Run the installer and follow the on-screen instructions
+### Linux
+- **AppImage**: [Download](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.1/cp-assist_0.2.1_amd64.AppImage)
+- **Arch Linux**: [.tar file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.1/cp-assist-0.2.1-1-x86_64.pkg.tar.zst)
+- **Debian/Ubuntu**: [.deb file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.1/cp-assist_0.2.1_amd64.deb)
+- **Red Hat/Fedora**: [.rpm file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.1/cp-assist-0.2.1-1.x86_64.rpm)
 
-#### Linux
-1. Download the AppImage or .deb package from the [Releases page](https://github.com/tsych0/cp-assist/releases)
-2. For AppImage:
-   ```bash
-   chmod +x CP-Assist.AppImage
-   ./CP-Assist.AppImage
-   ```
-3. For .deb package:
-   ```bash
-   sudo dpkg -i cp-assist_0.1.0_amd64.deb
-   ```
+### Windows
+- **MSI Installer**: [Download](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.1/cp-assist_0.2.1_x64_en-US.msi)
+- **Setup EXE**: [Download](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.1/cp-assist_0.2.1_x64-setup.exe)
 
-### Basic Usage
+## Usage
 
-1. **Setting Up**:
-   - Launch CP-Assist
-   - Configure your preferred programming language and settings
+1. **Getting Problems**: Navigate to a problem on a supported online judge and use Competitive Companion to send it to CP-Assist
+2. **Solving & Testing**: Write your solution and test against provided test cases
+3. **Submitting**: Submit your solution directly to the online judge
 
-2. **Getting Problems**:
-   - Navigate to a problem on a supported online judge
-   - Click the Competitive Companion extension button to send the problem to CP-Assist
+## Configuration
 
-3. **Solving & Testing**:
-   - Write your solution in the editor
-   - Run tests against the provided test cases
-   - Debug and optimize your solution
+CP-Assist can be configured through the Settings menu to customize languages, editor preferences, and appearance.
 
-4. **Submitting**:
-   - Once your solution passes all test cases, use the submission feature to send it to the online judge
-
-## 📝 Configuration
-
-CP-Assist can be configured through the Settings menu:
-
-- **Languages**: Customize compilation and execution commands
-- **Editor Settings**: Adjust editor preferences
-- **Appearance**: Modify the application's look and feel
-
-## 🔧 Development
-
-### Building from Source
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/tsych0/cp-assist.git
-   cd cp-assist
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Run in development mode:
-   ```bash
-   npm run tauri dev
-   ```
-
-4. Build for production:
-   ```bash
-   npm run tauri build
-   ```
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📜 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgements
-
-- [Competitive Companion](https://github.com/jmerle/competitive-companion) for problem parsing
-- [cph-submit](https://github.com/cph-submit) for submission integration
-- [Tauri](https://tauri.app/) for the application framework
-
----
-
-Made with ❤️ by [tsych0](https://github.com/tsych0)
+Citations:
+[1] https://github.com/veryshyjelly/cp-assist/blob/main/cp-assist-shot.png?raw=true
+[2] https://github.com/user-attachments/assets/516eacd3-817e-4e87-bcbf-0817f914553f
+[3] https://github.com/matiassingers/awesome-readme
+[4] https://github.com/othneildrew/Best-README-Template
+[5] https://stackoverflow.com/questions/9331281/how-can-i-test-what-my-readme-md-file-will-look-like-before-committing-to-github
+[6] https://www.dhiwise.com/post/how-to-write-a-readme-that-stands-out-in-best-practices
+[7] https://dev.to/kwing25/how-to-write-a-good-readme-for-your-project-1l10
+[8] https://cloudinary.com/guides/web-performance/4-ways-to-add-images-to-github-readme-1-bonus-method
+[9] https://bulldogjob.com/readme/how-to-write-a-good-readme-for-your-github-project
+[10] https://www.freecodecamp.org/news/how-to-write-a-good-readme-file/
+[11] https://packaging.python.org/guides/making-a-pypi-friendly-readme/
+[12] https://github.com/oskariorg/sample-application/blob/master/README.md
+[13] https://github.com/futurice/ios-good-practices/blob/master/README.md
+[14] https://eheidi.dev/tech-writing/20221212_documentation-101/
+[15] https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes
+[16] https://dev.to/yuridevat/how-to-create-a-good-readmemd-file-4pa2/comments
+[17] https://stackoverflow.com/questions/14494747/how-to-add-images-to-readme-md-on-github
+[18] https://github.com/LeonardoCardoso/Link-Preview/blob/master/README.md
+[19] https://github.com/mkdocs/mkdocs/issues/3110
+[20] https://www.welcometothejungle.com/en/articles/btc-readme-documentation-best-practices
+[21] https://devblogs.microsoft.com/nuget/write-a-high-quality-readme-for-nuget-packages/
+[22] https://github.com/joeyespo/grip
 
 ---
 Answer from Perplexity: pplx.ai/share
