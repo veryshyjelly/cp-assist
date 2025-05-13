@@ -131,6 +131,7 @@ fn run_all(
 }
 
 fn run(language: &Language, dir: &Path, mut verdict: Verdict) -> Result<Verdict, String> {
+    #[cfg(debug_assertions)]
     println!("dir: {}", dir.to_str().unwrap());
     let run_cmd = &language.run_cmd;
 
@@ -141,6 +142,7 @@ fn run(language: &Language, dir: &Path, mut verdict: Verdict) -> Result<Verdict,
         }
     }
 
+    #[cfg(debug_assertions)]
     println!("run_cmd: {}", run_cmd);
 
     // Create command with platform-specific options

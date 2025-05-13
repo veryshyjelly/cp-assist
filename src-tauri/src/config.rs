@@ -10,7 +10,7 @@ use tauri::State;
 use crate::utils::{extract_code_block, ResultTrait};
 use crate::{utils::resolve_path, AppState, Problem};
 
-#[derive(Default, Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Config {
     pub author: String,
     pub code: Code,
@@ -25,6 +25,48 @@ pub struct Code {
     pub modifier: String,
 }
 
+impl Default for Config {
+    fn default() -> Self {
+        Config {
+            author: "GOD".into(),
+            code: Code {
+                filename: r#"
+function filename(title, url) {
+  const urlMatch = url.match(/problemset\/problem\/(\d+)\/([A-Za-z0-9]+)/i);
+  if (!urlMatch) throw new Error("Invalid Codeforces problem URL");
+  const contestId = urlMatch[1];
+  const problemIndex = urlMatch[2].toLowerCase();
+
+  // Extract problem index and actual title from title string
+  const titleMatch = title.match(/^([A-Za-z0-9]+)\.\s*(.+)$/);
+  if (!titleMatch) throw new Error("Title format should be like 'A. Problem Title'");
+  const problemTitle = titleMatch[2];
+
+  // Format title: lowercase, words separated by hyphens
+  const formattedTitle = problemTitle
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric with hyphen
+    .replace(/^-+|-+$/g, "")     // Trim leading/trailing hyphens
+    .replace(/-+/g, "-");        // Collapse multiple hyphens
+
+  return `./src/bin/${contestId}.${problemIndex}.${formattedTitle}.rs`;
+}
+"#
+                .into(),
+                template: "".into(),
+                modifier: r#"
+function modify(code, lib_files) {
+    return `${code}`;
+}
+"#
+                .into(),
+            },
+            include: HashMap::new(),
+            editor: "code".into(),
+        }
+    }
+}
+
 impl Config {
     pub fn get_filename(&self, problem: &Problem) -> Result<String, String> {
         let mut context = boa_engine::Context::default();
@@ -34,7 +76,7 @@ impl Config {
 
         Ok(context
             .eval(Source::from_bytes(&format!(
-                "filename({}, {})",
+                "filename(\"{}\", \"{}\")",
                 problem.title, problem.url
             )))
             .map_to_string_mess("error while evaluating filename")?

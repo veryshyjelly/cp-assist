@@ -886,8 +886,10 @@ checksum = "a21f936df1771bf62b77f047b726c4625ff2e8aa607c01ec06e5a05bd8463401"
 dependencies = [
  "android-tzdata",
  "iana-time-zone",
+ "js-sys",
  "num-traits",
  "serde",
+ "wasm-bindgen",
  "windows-targets 0.52.6",
 ]
 
@@ -1065,6 +1067,7 @@ version = "0.2.1"
 dependencies = [
  "actix-web",
  "boa_engine",
+ "chrono",
  "open",
  "serde",
  "serde_json",

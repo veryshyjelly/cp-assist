@@ -3,6 +3,7 @@ use crate::info::Problem;
 use crate::judge::Verdict;
 use crate::utils::*;
 use crate::Language;
+use chrono::Local;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::{create_dir_all, File};
@@ -11,7 +12,6 @@ use std::ops::Deref;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Mutex;
-use std::time;
 use tauri::{Manager, State};
 
 // Windows-specific imports
@@ -132,14 +132,14 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
     }
 
     let mut f = File::create_new(&file_path).map_to_string()?;
-
+    let formatted_time = Local::now().format("%Y/%m/%d %H:%M"); // This is a Display object
     f.write_fmt(format_args!(
-        "{} Created by {} at {:#?}\n{} {}\n{}",
-        state.get_language()?.comment,
-        config.author,
-        time::Instant::now(),
-        state.get_language()?.comment,
-        state.problem.url,
+        "{} Created by {} at {}\n{} {}\n{}",
+        state.get_language()?.comment, // e.g., "//"
+        config.author,                 // e.g., "Ayush Biswas"
+        formatted_time,                // formatted as "2024/12/25 14:07"
+        state.get_language()?.comment, // e.g., "//"
+        state.problem.url,             // problem URL
         config.get_template(&state.directory)
     ))
     .map_to_string()?;
