@@ -1,10 +1,10 @@
-use std::{fs::read_to_string, path::PathBuf, str::FromStr, sync::Mutex};
+use std::sync::Mutex;
 
 use actix_web::{get, post, web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use tauri_plugin_http::reqwest;
 
-use crate::{file_name, utils::ResultTrait, AppState};
+use crate::{utils::ResultTrait, AppState};
 
 pub struct WebState {
     pub sol: Mutex<Option<Solution>>,
@@ -57,13 +57,9 @@ pub async fn post_submit(sol: web::Json<Solution>, data: web::Data<WebState>) ->
 #[tauri::command]
 pub async fn submit_solution(app_state: tauri::State<'_, Mutex<AppState>>) -> Result<(), String> {
     let state = app_state.lock().unwrap().clone();
-    let mut file_path = PathBuf::from_str(&state.directory).map_to_string()?;
-    file_path.push(state.get_language_dir());
-    file_path.push(file_name(&state.problem.title));
-    file_path.set_extension(state.get_language()?.get_extension());
-
-    let source_code = read_to_string(file_path).map_to_string()?;
-
+    let source_code = state
+        .config
+        .get_final_code(&state.problem, &state.directory)?;
     let client = reqwest::Client::builder().build().map_to_string()?;
 
     let problem_name = state

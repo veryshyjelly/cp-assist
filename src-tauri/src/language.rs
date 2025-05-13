@@ -1,8 +1,8 @@
 use crate::{state::AppState, utils::ResultTrait};
 use serde::{Deserialize, Serialize};
+use std::fs;
 use std::{
     collections::HashMap,
-    fs::read_to_string,
     process::{Command, Stdio},
     sync::Mutex,
     time::Duration,
@@ -41,10 +41,6 @@ pub struct Language {
 }
 
 impl Language {
-    pub fn get_extension(&self) -> String {
-        self.source_file.split('.').last().unwrap().into()
-    }
-
     pub fn check(&self) -> bool {
         let cmd = if self.compiler_cmd.is_empty() {
             &self.run_cmd
@@ -86,16 +82,33 @@ pub async fn get_languages(
     if state.lock().unwrap().languages.is_empty() {
         let path = handle
             .path()
-            .resolve("Languages.toml", BaseDirectory::Resource)
-            .map_to_string_mess("Languages.toml not found".into())?;
+            .resolve("Languages.toml", BaseDirectory::Config)
+            .map_to_string_mess("Failed to resolve config path")?;
 
-        let languages: HashMap<String, Language> = toml::from_str(
-            &read_to_string(path.clone())
-                .map_to_string_mess(format!("Error while reading toml file {path:?}"))?,
-        )
-        .map_to_string_mess("Error while parsing toml".into())?;
-        state.lock().unwrap().languages =
-            languages.into_iter().filter(|(_k, v)| v.check()).collect();
+        // If config file doesn't exist, copy from resources
+        if !path.exists() {
+            let resource_path = handle
+                .path()
+                .resolve("Languages.toml", BaseDirectory::Resource)
+                .map_to_string_mess("Languages.toml not found in resources")?;
+
+            // Create config directory if needed
+            if let Some(parent) = path.parent() {
+                fs::create_dir_all(parent)
+                    .map_to_string_mess("Failed to create config directory")?;
+            }
+
+            fs::copy(&resource_path, &path)
+                .map_to_string_mess("Failed to copy to config directory")?;
+        }
+
+        // Read from config directory
+        let content =
+            fs::read_to_string(&path).map_to_string_mess(&format!("Error reading {:?}", path))?;
+        let languages: HashMap<String, Language> =
+            toml::from_str(&content).map_to_string_mess("Error parsing Languages.toml")?;
+
+        state.lock().unwrap().languages = languages.into_iter().filter(|(_, v)| v.check()).collect()
     }
 
     let languages_map = state.lock().unwrap().languages.clone();
@@ -117,23 +130,4 @@ pub fn get_language(state: State<'_, Mutex<AppState>>) -> usize {
 #[tauri::command]
 pub fn set_language(language_id: usize, state: State<'_, Mutex<AppState>>) {
     state.lock().unwrap().language_id = language_id
-}
-
-#[tauri::command]
-pub fn get_language_dir(
-    language_id: usize,
-    state: State<'_, Mutex<AppState>>,
-) -> Result<String, String> {
-    Ok(state
-        .lock()
-        .unwrap()
-        .language_dir
-        .get(&language_id)
-        .ok_or("language not found")?
-        .clone())
-}
-
-#[tauri::command]
-pub fn set_language_dir(language_id: usize, dir: String, state: State<'_, Mutex<AppState>>) {
-    state.lock().unwrap().language_dir.insert(language_id, dir);
 }

@@ -1,3 +1,4 @@
+mod config;
 mod info;
 mod judge;
 mod language;
@@ -6,6 +7,7 @@ mod submit;
 mod utils;
 
 use actix_web::{web, App, HttpServer};
+use config::read_config;
 use info::*;
 use judge::*;
 use language::*;
@@ -52,23 +54,20 @@ pub fn run() {
             let _ = show_window(app);
         }))
         .invoke_handler(tauri::generate_handler![
-            create_file,
-            test,
-            submit_solution,
-            save_state,
             get_directory,
             set_directory,
-            get_languages,
-            get_language,
             set_language,
-            get_language_dir,
-            set_language_dir,
-            get_problem,
+            get_language,
+            get_languages,
             set_problem,
-            get_verdicts,
+            get_problem,
             set_verdicts,
-            get_open_with,
-            set_open_with
+            get_verdicts,
+            create_file,
+            read_config,
+            save_state,
+            submit_solution,
+            test,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -83,22 +82,5 @@ fn show_window(app: &AppHandle) {
         window.set_focus().unwrap(); // ✅ Bring it to front
     } else {
         panic!("Sorry, no window found");
-    }
-}
-
-pub fn file_name(title: &String) -> String {
-    let mut x: Vec<_> = title.split(|c: char| !c.is_alphanumeric()).collect();
-    x.split_off(1)
-        .join("")
-        .split(" ")
-        .map(|y| uppercase_first_letter(y))
-        .collect::<Vec<String>>()
-        .join("")
-}
-fn uppercase_first_letter(s: &str) -> String {
-    let mut c = s.chars();
-    match c.next() {
-        None => String::new(),
-        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
     }
 }

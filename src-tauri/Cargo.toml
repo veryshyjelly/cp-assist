@@ -25,6 +25,7 @@ tauri-plugin-http = "2.0.0-rc.0"
 toml = { version = "0.8.19", features = ["preserve_order"] }
 wait-timeout = "0.2.0"
 open = "5.3.0"
+boa_engine = "0.20.0"
 
 [dependencies.uuid]
 version = "1.10.0"

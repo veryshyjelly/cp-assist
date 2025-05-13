@@ -1,12 +1,11 @@
 use crate::state::AppState;
-use crate::utils::ResultTrait;
-use crate::{file_name, Language};
+use crate::utils::*;
+use crate::Language;
 use serde::{Deserialize, Serialize};
 use std::fs::{self, create_dir_all, remove_dir_all};
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::{Command, Stdio};
-use std::str::FromStr;
 use std::sync::Mutex;
 use tauri::{Emitter, State};
 use uuid::Uuid;
@@ -34,7 +33,7 @@ pub async fn test(
     app_state: State<'_, Mutex<AppState>>,
     handle: tauri::AppHandle,
 ) -> Result<(), String> {
-    let state = app_state.lock().unwrap().clone();
+    let state = app_state.lock().unwrap();
 
     // creating a temporary directory
     let mut dir = std::env::temp_dir();
@@ -45,16 +44,15 @@ pub async fn test(
     let mut file_path = dir.clone();
     file_path.push(&language.source_file);
 
-    let mut source_file_path = PathBuf::from_str(&state.directory).unwrap();
-    source_file_path.push(state.get_language_dir());
-    source_file_path.push(file_name(&state.problem.title));
-    source_file_path.set_extension(state.get_language()?.get_extension());
+    let source_file = state
+        .config
+        .get_final_code(&state.problem, &state.directory)?;
 
-    // copy the file into the temporary directory
+    // copy the final code into the temporary directory
     create_dir_all(&dir).map_to_string()?;
-    fs::copy(source_file_path, file_path).map_to_string()?;
+    fs::write(file_path, source_file).map_to_string()?;
 
-    let mut verdicts = state.verdicts;
+    let mut verdicts = state.verdicts.clone();
     for v in &mut verdicts {
         v.status = "Compiling".into();
         v.status_id = 1;
@@ -132,15 +130,6 @@ fn run_all(
     Ok(res)
 }
 
-fn resolve_command_path(dir: &Path, command: &str) -> PathBuf {
-    // Handle both Unix and Windows style relative paths
-    if command.starts_with("./") || command.starts_with(".\\") {
-        dir.join(&command[2..]) // Remove "./" or ".\\" and join with dir
-    } else {
-        PathBuf::from(command) // Use command as-is if it's not relative
-    }
-}
-
 fn run(language: &Language, dir: &Path, mut verdict: Verdict) -> Result<Verdict, String> {
     println!("dir: {}", dir.to_str().unwrap());
     let run_cmd = &language.run_cmd;
@@ -156,7 +145,7 @@ fn run(language: &Language, dir: &Path, mut verdict: Verdict) -> Result<Verdict,
 
     // Create command with platform-specific options
     #[cfg(windows)]
-    let mut child = Command::new(resolve_command_path(dir, run_cmd))
+    let mut child = Command::new(resolve_path(dir, run_cmd))
         .current_dir(dir)
         .args(&language.run_args)
         .creation_flags(CREATE_NO_WINDOW)
@@ -167,7 +156,7 @@ fn run(language: &Language, dir: &Path, mut verdict: Verdict) -> Result<Verdict,
         .map_to_string()?;
 
     #[cfg(not(windows))]
-    let mut child = Command::new(resolve_command_path(dir, run_cmd))
+    let mut child = Command::new(resolve_path(dir, run_cmd))
         .current_dir(dir)
         .args(&language.run_args)
         .stdin(Stdio::piped())

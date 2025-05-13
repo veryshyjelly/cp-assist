@@ -1,16 +1,17 @@
+use crate::config::Config;
 use crate::info::Problem;
 use crate::judge::Verdict;
-use crate::utils::ResultTrait;
-use crate::{file_name, Language};
+use crate::utils::*;
+use crate::Language;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fs::{create_dir_all, read, File};
+use std::fs::{create_dir_all, File};
 use std::io::{BufReader, Write};
 use std::ops::Deref;
 use std::path::PathBuf;
-use std::process::{Command, Stdio};
 use std::str::FromStr;
 use std::sync::Mutex;
+use std::time;
 use tauri::{Manager, State};
 
 // Windows-specific imports
@@ -22,12 +23,10 @@ const CREATE_NO_WINDOW: u32 = 0x08000000; // Prevents opening a new window
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct AppState {
-    pub directory: String,
+    pub directory: PathBuf,
     pub language_id: usize,
-    #[serde(default)]
-    pub language_dir: HashMap<usize, String>,
-    #[serde(default)]
-    pub open_with: String,
+    #[serde(default, skip_serializing)]
+    pub config: Config,
     #[serde(default, skip_serializing)]
     pub languages: HashMap<String, Language>,
     #[serde(default, skip_serializing)]
@@ -63,23 +62,18 @@ impl AppState {
             .clone();
         Ok(language)
     }
-
-    pub fn get_language_dir(&self) -> String {
-        self.language_dir
-            .get(&self.language_id)
-            .unwrap_or(&"".into())
-            .clone()
-    }
 }
 
 #[tauri::command]
 pub fn get_directory(state: State<'_, Mutex<AppState>>) -> String {
-    state.lock().unwrap().directory.clone()
+    state.lock().unwrap().directory.to_str().unwrap().into()
 }
 
 #[tauri::command]
-pub fn set_directory(directory: String, state: State<'_, Mutex<AppState>>) {
-    state.lock().unwrap().directory = directory
+pub fn set_directory(directory: String, state: State<'_, Mutex<AppState>>) -> Result<(), String> {
+    let dir = PathBuf::from_str(&directory).map_to_string()?;
+    state.lock().unwrap().directory = dir;
+    Ok(())
 }
 
 #[tauri::command]
@@ -100,16 +94,6 @@ pub fn get_verdicts(state: State<'_, Mutex<AppState>>) -> Vec<Verdict> {
 #[tauri::command]
 pub fn set_verdicts(verdicts: Vec<Verdict>, state: State<'_, Mutex<AppState>>) {
     state.lock().unwrap().verdicts = verdicts
-}
-
-#[tauri::command]
-pub fn get_open_with(state: State<'_, Mutex<AppState>>) -> String {
-    state.lock().unwrap().open_with.clone()
-}
-
-#[tauri::command]
-pub fn set_open_with(open_with: String, state: State<'_, Mutex<AppState>>) {
-    state.lock().unwrap().open_with = open_with
 }
 
 #[tauri::command]
@@ -135,57 +119,33 @@ pub fn save_state(
 #[tauri::command]
 pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), String> {
     let state = app_state.lock().unwrap().clone();
-    let mut file_path = PathBuf::from_str(&state.directory).map_to_string()?;
-    let mut template_path = file_path.clone();
-    template_path.push("template");
-    file_path.push(state.get_language_dir());
-    create_dir_all(&file_path).map_to_string()?;
+    let config = &state.config;
 
-    file_path.push(file_name(&state.problem.title));
-    file_path.set_extension(state.get_language()?.get_extension());
-    template_path.set_extension(state.get_language()?.get_extension());
+    let file_path = state
+        .config
+        .get_file_path(&state.problem, &state.directory)?;
+    create_dir_all(&file_path.parent().unwrap()).map_to_string()?;
 
-    if file_path.exists() && !state.open_with.is_empty() {
-        #[cfg(windows)]
-        let c = Command::new(state.open_with)
-            .args(&[file_path.as_os_str()])
-            .creation_flags(CREATE_NO_WINDOW)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .map_to_string()?;
-
-        #[cfg(not(windows))]
-        let c = Command::new(state.open_with)
-            .args(&[file_path.as_os_str()])
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .map_to_string()?;
-
-        println!("stderr: {:?}", c.stderr);
-        println!("stdout: {:?}", c.stdout);
+    if file_path.exists() && !config.editor.is_empty() {
+        open::with(&file_path, config.editor.clone()).map_to_string()?;
         return Ok(());
     }
 
     let mut f = File::create_new(&file_path).map_to_string()?;
 
     f.write_fmt(format_args!(
-        "{} {}\n",
+        "{} Created by {} at {:#?}\n{} {}\n{}",
         state.get_language()?.comment,
-        state.problem.url
+        config.author,
+        time::Instant::now(),
+        state.get_language()?.comment,
+        state.problem.url,
+        config.get_template(&state.directory)
     ))
     .map_to_string()?;
 
-    if template_path.exists() {
-        f.write(&read(template_path).map_to_string()?)
-            .map_to_string()?;
-    }
-
-    if !state.open_with.is_empty() {
-        open::with(&file_path, state.open_with).map_to_string()?;
+    if !config.editor.is_empty() {
+        open::with(&file_path, config.editor.clone()).map_to_string()?;
     }
 
     Ok(())

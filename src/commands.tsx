@@ -3,316 +3,137 @@ import { notifications } from "@mantine/notifications";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import { Language, Problem, Verdict } from "./Languages.ts";
 
-export const set_directory = async (directory: string) => {
-    try {
-        await invoke("set_directory", { directory: directory });
-        return true;
-    } catch (e) {
-        console.log(e);
-        notifications.show({
-            id: "directory_not_set",
-            title: "Directory not found",
-            message: "The specified directory was not found",
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return false;
+async function invokeWithNotify<T>(
+  cmd: string,
+  args: Record<string, any> = {},
+  successMessage?: string,
+  errorMessage?: string,
+): Promise<T | null> {
+  try {
+    const result = await invoke<T>(cmd, args);
+    if (successMessage) {
+      notifications.show({
+        id: `success_${cmd}`,
+        message: successMessage,
+        icon: <IconCheck size="1.1rem" />,
+        color: "teal",
+      });
     }
-};
-
-export const get_directory = async () => {
-    try {
-        return await invoke("get_directory") as string;
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_get_directory",
-            message: "Cannot get the directory",
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return "";
-    }
-};
-
-export const set_language = async (language_id: number) => {
-    try {
-        await invoke("set_language", { languageId: language_id });
-        notifications.show({
-            id: "language_set",
-            message: "language set successfully",
-            icon: <IconCheck size="1.1rem" />,
-            color: "teal",
-        });
-        return true;
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_set_language",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return false;
-    }
-};
-
-export const get_language_dir = async (language_id: number) => {
-    try {
-        return await invoke("get_language_dir", { languageId: language_id }) as string;
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_get_language_dir",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return "";
-    }
-};
-
-export const set_language_dir = async (language_id: number, dir: string) => {
-    try {
-        await invoke("set_language_dir", { languageId: language_id, dir: dir });
-        notifications.show({
-            id: "language_set",
-            message: "language dir set successfully",
-            icon: <IconCheck size="1.1rem" />,
-            color: "teal",
-        });
-        return true
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_set_language_dir",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return false;
-    }
-};
-
-export const get_language = async () => {
-    try {
-        return (await invoke("get_language")) as number;
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_get_language",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return 0;
-    }
-};
-
-export const get_languages = async () => {
-    try {
-        return (await invoke("get_languages")) as Language[];
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_get_languages",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return [];
-    }
+    return result;
+  } catch (e) {
+    console.error(e);
+    notifications.show({
+      id: `error_${cmd}`,
+      message: errorMessage ? `${errorMessage}: ${e}` : (e as string),
+      icon: <IconX size="1.1rem" />,
+      color: "red",
+    });
+    return null;
+  }
 }
 
-export const set_problem = async (problem: Problem) => {
-    try {
-        await invoke("set_problem", { problem: problem });
-        return true;
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_set_problem",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return false;
-    }
-};
+export const set_directory = async (directory: string) =>
+  (await invokeWithNotify<boolean>(
+    "set_directory",
+    { directory },
+    undefined,
+    "The specified directory was not found",
+  )) ?? false;
 
-export const get_problem = async () => {
-    try {
-        return (await invoke("get_problem")) as Problem;
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_get_problem",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return null;
-    }
-};
+export const get_directory = async () =>
+  (await invokeWithNotify<string>(
+    "get_directory",
+    {},
+    undefined,
+    "Cannot get the directory",
+  )) ?? "";
 
-export const set_verdicts = async (verdicts: Verdict[]) => {
-    try {
-        await invoke("set_verdicts", { verdicts: verdicts });
-        return true;
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_set_verdicts",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return false;
-    }
-};
+export const set_language = async (language_id: number) =>
+  (await invokeWithNotify<boolean>(
+    "set_language",
+    { languageId: language_id },
+    "Language set successfully",
+    "Could not set language",
+  )) ?? false;
 
+export const get_language = async () =>
+  (await invokeWithNotify<number>(
+    "get_language",
+    {},
+    undefined,
+    "Could not get language",
+  )) ?? 0;
 
-export const get_verdicts = async () => {
-    try {
-        return (await invoke("get_verdicts")) as Verdict[];
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_get_verdicts",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return null;
-    }
-};
+export const get_languages = async () =>
+  (await invokeWithNotify<Language[]>(
+    "get_languages",
+    {},
+    undefined,
+    "Could not get languages",
+  )) ?? [];
 
-export const set_open_with = async (open_with: string) => {
-    try {
-        await invoke("set_open_with", { openWith: open_with });
-        return true;
-    } catch (e) {
-        console.log(e);
-        notifications.show({
-            id: "directory_not_set",
-            title: "Application not set",
-            message: "The specified application was not set",
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return false;
-    }
-};
+export const set_problem = async (problem: Problem) =>
+  (await invokeWithNotify<boolean>(
+    "set_problem",
+    { problem },
+    undefined,
+    "Could not set problem",
+  )) ?? false;
 
-export const get_open_with = async () => {
-    try {
-        return await invoke("get_open_with") as string;
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_get_directory",
-            message: "Cannot get the open with application",
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return "";
-    }
-};
+export const get_problem = async () =>
+  await invokeWithNotify<Problem>(
+    "get_problem",
+    {},
+    undefined,
+    "Could not get problem",
+  );
 
+export const set_verdicts = async (verdicts: Verdict[]) =>
+  (await invokeWithNotify<boolean>(
+    "set_verdicts",
+    { verdicts },
+    undefined,
+    "Could not set verdicts",
+  )) ?? false;
 
+export const get_verdicts = async () =>
+  await invokeWithNotify<Verdict[]>(
+    "get_verdicts",
+    {},
+    undefined,
+    "Could not get verdicts",
+  );
 
-export const run = async () => {
-    try {
-        return (await invoke("test")) as null;
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_run",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return null;
-    }
-};
+export const read_config = async () =>
+  (await invokeWithNotify<null>(
+    "read_config",
+    {},
+    "Config file succesfully read",
+  )) ?? false;
 
-export const submit = async () => {
-    try {
-        await invoke("submit_solution");
-        notifications.show({
-            id: "language_set",
-            message: "submitting on codeforces...",
-            icon: <IconCheck size="1.1rem" />,
-            color: "teal",
-        });
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_submit",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-    }
-    return null;
-};
+export const create_file = async () =>
+  (await invokeWithNotify<boolean>(
+    "create_file",
+    {},
+    "File created",
+    "Could not create file",
+  )) ?? false;
 
-export const create_file = async () => {
-    try {
-        await invoke("create_file");
-        notifications.show({
-            id: "file_created",
-            message: "file created",
-            icon: <IconCheck size="1.1rem" />,
-            color: "teal",
-        });
-        return true;
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_create_file",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return false;
-    }
-};
+export const save_state = async () =>
+  (await invokeWithNotify<boolean>(
+    "save_state",
+    {},
+    undefined,
+    "Could not save state",
+  )) ?? false;
 
-export const open_file = async () => {
-    try {
-        await invoke("open_file");
-        notifications.show({
-            id: "file_opened",
-            message: "file opened in editor",
-            icon: <IconCheck size="1.1rem" />,
-            color: "teal",
-        });
-        return true;
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_open_file",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return false;
-    }
-};
+export const submit = async () =>
+  await invokeWithNotify<null>(
+    "submit_solution",
+    {},
+    "Submitting on codeforces...",
+    "Could not submit",
+  );
 
-export const save_state = async () => {
-    try {
-        await invoke("save_state");
-        return true;
-    } catch (e) {
-        console.error(e);
-        notifications.show({
-            id: "cannot_save_state",
-            message: e as string,
-            icon: <IconX size="1.1rem" />,
-            color: "red",
-        });
-        return false;
-    }
-};
+export const run = async () =>
+  await invokeWithNotify<null>("test", {}, undefined, "Could not run test");
