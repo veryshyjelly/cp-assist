@@ -155,7 +155,3 @@ CP-Assist is released under the MIT License. See [LICENSE](LICENSE) file for det
 ---
 
 Made with ❤️ by [Ayush Biswas](https://github.com/veryshyjelly)
-
-Citations:
-[1] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/51715892/ea064ecf-5923-4890-9994-6441b1f41175/tauri_project_context.txt
-[2] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/51715892/ea064ecf-5923-4890-9994-6441b1f41175/tauri_project_context.txt
