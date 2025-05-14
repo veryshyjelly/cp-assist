@@ -6,6 +6,7 @@ import {
   create_file,
   get_language,
   get_languages,
+  read_config,
   run,
   set_directory,
   set_language,
@@ -62,6 +63,7 @@ const TitleBar = ({
       ),
     );
 
+    read_config();
     window.addEventListener("focus", () => setIsFocused(true));
     window.addEventListener("blur", () => setIsFocused(false));
   }, []);

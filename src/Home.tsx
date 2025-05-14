@@ -14,7 +14,6 @@ import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { Problem, Verdict } from "./Languages.ts";
 import { IconPlus } from "@tabler/icons-react";
 import { emit } from "@tauri-apps/api/event";
-import { read_config } from "./commands.tsx";
 
 const appWindow = getCurrentWebviewWindow();
 
@@ -112,7 +111,6 @@ const Home = ({
   };
 
   useEffect(() => {
-    read_config();
     setInput(verdicts[caseIndex]?.input ?? "");
     setOutput(verdicts[caseIndex]?.output ?? "");
     setAnswer(verdicts[caseIndex]?.answer ?? "");
