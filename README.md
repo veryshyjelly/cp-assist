@@ -32,7 +32,7 @@ https://github.com/user-attachments/assets/516eacd3-817e-4e87-bcbf-0817f914553f
 - **Verdict Generation**: Automatic comparison of expected and actual outputs
 
 ### Language Support
-- **Multi-language Environment**: Built-in support for popular programming languages (C++, Python, Java, Rust)
+- **Multi-language Environment**: Built-in support for popular programming languages (C++, Python, Java, Rust, etc.)
 - **Customizable Configurations**: Modify compiler flags and execution parameters via TOML configuration
 - **Template Management**: Create and use language-specific templates for faster coding
 
@@ -48,19 +48,18 @@ https://github.com/user-attachments/assets/516eacd3-817e-4e87-bcbf-0817f914553f
 - [CP-Submit](https://github.com/tsycho/cp-submit) for submission integration
 
 ### Linux
-- **AppImage**: [Download](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.1/cp-assist_0.2.1_amd64.AppImage)
+- **AppImage**: [Download](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist_0.3.0_amd64.deb)
   ```bash
   # Making AppImage executable
   chmod +x cp-assist_0.2.1_amd64.AppImage
   ./cp-assist_0.2.1_amd64.AppImage
   ```
-- **Arch Linux**: [.tar file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.1/cp-assist-0.2.1-1-x86_64.pkg.tar.zst)
-- **Debian/Ubuntu**: [.deb file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.1/cp-assist_0.2.1_amd64.deb)
-- **Red Hat/Fedora**: [.rpm file](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.1/cp-assist-0.2.1-1.x86_64.rpm)
+- **Arch Linux**: [.tar file](https://github.com/tsych0/cp-assist/archive/refs/tags/v0.3.0.tar.gz)
+- **Debian/Ubuntu**: [.deb file](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist_0.3.0_amd64.deb)
+- **Red Hat/Fedora**: [.rpm file](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist-0.3.0-1.x86_64.rpm)
 
 ### Windows
-- **MSI Installer**: [Download](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.1/cp-assist_0.2.1_x64_en-US.msi)
-- **Setup EXE**: [Download](https://github.com/veryshyjelly/cp-assist/releases/download/v0.2.1/cp-assist_0.2.1_x64-setup.exe)
+- **Setup EXE**: [Download](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist_0.3.0_x64-setup.exe)
 
 ## Usage
 
@@ -108,6 +107,56 @@ Customize how files are named and templated:
 [code]
 filename = "..."  # JavaScript function to generate filenames
 template = "./templates/default.rs"  # Path to template file
+```
+
+### Sample config.toml
+```toml
+author = "Ayush Biswas"
+
+editor = "zeditor"
+
+[code]
+filename = '''
+function filename(title, url) {
+  const urlMatch = url.match(/problemset\/problem\/(\d+)\/([A-Za-z0-9]+)/i);
+  if (!urlMatch) throw new Error("Invalid Codeforces problem URL");
+  const contestId = urlMatch[1];
+  const problemIndex = urlMatch[2].toLowerCase();
+
+  // Extract problem index and actual title from title string
+  const titleMatch = title.match(/^([A-Za-z0-9]+)\.\s*(.+)$/);
+  if (!titleMatch) throw new Error("Title format should be like 'A. Problem Title'");
+  const problemTitle = titleMatch[2];
+
+  // Format title: lowercase, words separated by hyphens
+  const formattedTitle = problemTitle
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric with hyphen
+    .replace(/^-+|-+$/g, "")     // Trim leading/trailing hyphens
+    .replace(/-+/g, "-");        // Collapse multiple hyphens
+
+  return `./src/bin/${contestId}-${problemIndex}-${formattedTitle}.rs`;
+}
+'''
+template = "./src/main.rs"
+modifier = '''
+function modify(code, lib_files) {
+    return `
+${code}
+
+mod cpio {
+    ${lib_files.cpio}
+}
+
+mod itertools {
+    ${lib_files.itertools}
+}`;
+}
+'''
+
+[include]
+cpio = "./src/cpio.rs"
+itertools = "./src/itertools.rs"
 ```
 
 ## Technical Details
