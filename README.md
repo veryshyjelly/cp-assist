@@ -62,8 +62,8 @@ https://github.com/user-attachments/assets/516eacd3-817e-4e87-bcbf-0817f914553f
 - **Setup EXE**: [Download](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist_0.3.0_x64-setup.exe)
 
 ### Mac
-- *DMG File**: [Download](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist_0.3.0_aarch64.dmg)
-- *App zip**: [Download](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist.app.zip)
+- **DMG File**: [Download](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist_0.3.0_aarch64.dmg)
+- **App zip**: [Download](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist.app.zip)
 
 ## Usage
 
