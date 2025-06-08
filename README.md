@@ -51,8 +51,8 @@ https://github.com/user-attachments/assets/516eacd3-817e-4e87-bcbf-0817f914553f
 - **AppImage**: [Download](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist_0.3.0_amd64.deb)
   ```bash
   # Making AppImage executable
-  chmod +x cp-assist_0.2.1_amd64.AppImage
-  ./cp-assist_0.2.1_amd64.AppImage
+  chmod +x cp-assist_0.3.0_amd64.AppImage
+  ./cp-assist_0.3.0_amd64.AppImage
   ```
 - **Arch Linux**: [.tar file](https://github.com/tsych0/cp-assist/archive/refs/tags/v0.3.0.tar.gz)
 - **Debian/Ubuntu**: [.deb file](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist_0.3.0_amd64.deb)
@@ -60,6 +60,10 @@ https://github.com/user-attachments/assets/516eacd3-817e-4e87-bcbf-0817f914553f
 
 ### Windows
 - **Setup EXE**: [Download](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist_0.3.0_x64-setup.exe)
+
+### Mac
+- *DMG File**: [Download](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist_0.3.0_aarch64.dmg)
+- *App zip**: [Download](https://github.com/tsych0/cp-assist/releases/download/v0.3.0/cp-assist.app.zip)
 
 ## Usage
 
