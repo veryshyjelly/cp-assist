@@ -19,12 +19,15 @@ const appWindow = getCurrentWindow();
 const TitleBar = ({
   directory,
   setDirectory,
+  loading,
+  setLoading
 }: {
   directory: string;
   setDirectory: (arg0: string) => void;
+  loading: boolean,
+  setLoading: (arg: boolean) => void
 }) => {
   const [isFocused, setIsFocused] = useState(true);
-  const [loading, setLoading] = useState(false);
   const [language, setLanguage] = useState("0");
   const [languages, setLanguages] = useState<
     { value: string; label: string }[]

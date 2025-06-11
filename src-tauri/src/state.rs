@@ -3,10 +3,10 @@ use crate::info::Problem;
 use crate::judge::Verdict;
 use crate::utils::*;
 use crate::Language;
-use std::time;
+use crate::WINDOW;
 use chrono::Local;
+use notify::{Event, RecursiveMode, Watcher};
 use serde::{Deserialize, Serialize};
-use wait_timeout::ChildExt;
 use std::collections::HashMap;
 use std::fs::{create_dir_all, File};
 use std::io::{BufReader, Write};
@@ -14,8 +14,14 @@ use std::ops::Deref;
 use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
+use std::sync::mpsc;
 use std::sync::Mutex;
+use std::thread;
+use std::time;
+use std::time::Duration;
+use tauri::Emitter;
 use tauri::{Manager, State};
+use wait_timeout::ChildExt;
 
 // Windows-specific imports
 #[cfg(windows)]
@@ -85,8 +91,15 @@ pub fn get_problem(state: State<'_, Mutex<AppState>>) -> Problem {
 }
 
 #[tauri::command]
-pub fn set_problem(problem: Problem, state: State<'_, Mutex<AppState>>) {
-    state.lock().unwrap().problem = problem
+pub async fn set_problem(
+    problem: Problem,
+    state: State<'_, Mutex<AppState>>,
+) -> Result<(), String> {
+    state.lock().unwrap().problem = problem;
+    if state.lock().unwrap().config.toggle.create_file {
+        return create_file(state).await;
+    }
+    Ok(())
 }
 
 #[tauri::command]
@@ -129,9 +142,44 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
         .get_file_path(&state.problem, &state.directory)?;
     create_dir_all(&file_path.parent().unwrap()).map_to_string()?;
 
+    if config.toggle.run_on_save {
+        let (tx, rx) = mpsc::channel::<notify::Result<Event>>();
+        let mut watcher = notify::recommended_watcher(tx).map_to_string()?;
+
+        let window = WINDOW.get().expect("window-is-unavailable");
+        let file_path = file_path.clone();
+
+        let handle = thread::spawn(move || {
+            watcher
+                .watch(&file_path, RecursiveMode::NonRecursive)
+                .map_to_string()
+                .unwrap();
+
+            let mut previous = time::Instant::now();
+
+            for res in rx {
+                let now = time::Instant::now();
+                if now.duration_since(previous) < Duration::from_secs(1) {
+                    continue;
+                }
+                match res {
+                    Ok(_event) => window.emit("test", 0).unwrap(),
+                    Err(e) => println!("watch error: {:?}", e),
+                }
+                previous = now;
+            }
+        });
+
+        drop(handle);
+    }
+
     if file_path.exists() && !config.editor.is_empty() {
-        let mut cmd = Command::new(config.editor.clone()).arg(&file_path).spawn().map_to_string()?;
-        cmd.wait_timeout(time::Duration::from_secs(1)).map_to_string()?;
+        let mut cmd = Command::new(config.editor.clone())
+            .arg(&file_path)
+            .spawn()
+            .map_to_string()?;
+        cmd.wait_timeout(time::Duration::from_secs(1))
+            .map_to_string()?;
         return Ok(());
     }
 
@@ -149,8 +197,12 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
     .map_to_string()?;
 
     if !config.editor.is_empty() {
-        let mut cmd = Command::new(config.editor.clone()).arg(&file_path).spawn().map_to_string()?;
-        cmd.wait_timeout(time::Duration::from_secs(1)).map_to_string()?;
+        let mut cmd = Command::new(config.editor.clone())
+            .arg(&file_path)
+            .spawn()
+            .map_to_string()?;
+        cmd.wait_timeout(time::Duration::from_secs(1))
+            .map_to_string()?;
     }
 
     Ok(())

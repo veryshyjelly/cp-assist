@@ -16,6 +16,14 @@ pub struct Config {
     pub code: Code,
     pub include: HashMap<String, String>,
     pub editor: String,
+    pub toggle: ToggleSettings,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct ToggleSettings {
+    pub create_file: bool,
+    pub run_on_save: bool,
+    pub submit_on_ac: bool,
 }
 
 #[derive(Default, Debug, Serialize, Deserialize, Clone)]
@@ -63,6 +71,11 @@ function modify(code, lib_files) {
             },
             include: HashMap::new(),
             editor: "code".into(),
+            toggle: ToggleSettings {
+                create_file: true,
+                run_on_save: true,
+                submit_on_ac: false,
+            },
         }
     }
 }
