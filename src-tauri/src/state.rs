@@ -3,13 +3,16 @@ use crate::info::Problem;
 use crate::judge::Verdict;
 use crate::utils::*;
 use crate::Language;
+use std::time;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
+use wait_timeout::ChildExt;
 use std::collections::HashMap;
 use std::fs::{create_dir_all, File};
 use std::io::{BufReader, Write};
 use std::ops::Deref;
 use std::path::PathBuf;
+use std::process::Command;
 use std::str::FromStr;
 use std::sync::Mutex;
 use tauri::{Manager, State};
@@ -127,7 +130,8 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
     create_dir_all(&file_path.parent().unwrap()).map_to_string()?;
 
     if file_path.exists() && !config.editor.is_empty() {
-        open::with(&file_path, config.editor.clone()).map_to_string()?;
+        let mut cmd = Command::new(config.editor.clone()).arg(&file_path).spawn().map_to_string()?;
+        cmd.wait_timeout(time::Duration::from_secs(1)).map_to_string()?;
         return Ok(());
     }
 
@@ -145,7 +149,8 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
     .map_to_string()?;
 
     if !config.editor.is_empty() {
-        open::with(&file_path, config.editor.clone()).map_to_string()?;
+        let mut cmd = Command::new(config.editor.clone()).arg(&file_path).spawn().map_to_string()?;
+        cmd.wait_timeout(time::Duration::from_secs(1)).map_to_string()?;
     }
 
     Ok(())

@@ -1,6 +1,6 @@
 {
   "productName": "cp-assist",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "identifier": "com.cpgawd.dev",
   "build": {
     "beforeDevCommand": "pnpm dev",
@@ -20,7 +20,8 @@
     ],
     "security": {
       "csp": null
-    }
+    },
+    "macOSPrivateApi": true
   },
   "bundle": {
     "active": true,
