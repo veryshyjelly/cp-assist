@@ -1,12 +1,12 @@
-use crate::state::AppState;
-use crate::utils::*;
-use crate::Language;
+use crate::{state::AppState, utils::*, Language, WINDOW};
 use serde::{Deserialize, Serialize};
-use std::fs::{self, create_dir_all, remove_dir_all};
-use std::io::Write;
-use std::path::Path;
-use std::process::{Command, Stdio};
-use std::sync::Mutex;
+use std::{
+    fs::{self, create_dir_all, remove_dir_all},
+    io::Write,
+    path::Path,
+    process::{Command, Stdio},
+    sync::Mutex,
+};
 use tauri::{Emitter, State};
 use uuid::Uuid;
 
@@ -75,6 +75,13 @@ pub async fn test(
         handle.emit("set-verdicts", &verdicts).map_to_string()?;
 
         let verdicts = run_all(&language, &dir, verdicts)?;
+        if verdicts.iter().all(|v| v.status == "Accepted") && state.config.toggle.submit_on_ac {
+            WINDOW
+                .get()
+                .expect("could not find widow")
+                .emit("submit", 0)
+                .map_to_string()?;
+        }
         handle.emit("set-verdicts", &verdicts).map_to_string()?;
     }
 

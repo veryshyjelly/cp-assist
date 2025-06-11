@@ -1,6 +1,6 @@
 [package]
 name = "cp-assist"
-version = "0.3.0"
+version = "0.3.1"
 description = "A Competitive Programming assistant"
 authors = ["Ayush Biswas"]
 edition = "2021"
@@ -21,7 +21,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1.0.127"
 tauri-plugin-dialog = "2.2.2"
 actix-web = "4.11.0"
-tauri-plugin-http = "2.4.4"
+tauri-plugin-http = { version = "2.4.4", features = ["json"] }
 toml = { version = "0.8.23", features = ["preserve_order"] }
 wait-timeout = "0.2.1"
 open = "5.3.2"

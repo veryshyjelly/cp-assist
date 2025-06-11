@@ -11,10 +11,17 @@ use config::read_config;
 use info::*;
 use judge::*;
 use language::*;
+use notify::Event;
 use state::*;
-use std::sync::{Mutex, OnceLock};
+use std::{
+    sync::{mpsc, Arc, Mutex, OnceLock, RwLock},
+    thread,
+    time::{self, Duration},
+};
 use submit::*;
-use tauri::{AppHandle, Manager, WebviewWindow};
+use tauri::{AppHandle, Emitter, Manager, WebviewWindow};
+
+use crate::utils::ResultTrait;
 
 pub static WINDOW: OnceLock<WebviewWindow> = OnceLock::new();
 
@@ -24,8 +31,30 @@ pub fn run() {
         .plugin(tauri_plugin_http::init())
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
-
             _ = WINDOW.set(window);
+
+            let (tx, rx) = mpsc::channel::<notify::Result<Event>>();
+            let watcher = notify::recommended_watcher(tx).map_to_string()?;
+
+            let handle = thread::spawn(move || {
+                let mut previous = time::Instant::now();
+
+                let window = WINDOW.get().expect("window-is-unavailable");
+                for res in rx {
+                    let now = time::Instant::now();
+                    if now.duration_since(previous) < Duration::from_secs(1) {
+                        continue;
+                    }
+                    println!("got something");
+                    match res {
+                        Ok(_event) => window.emit("test", 0).unwrap(),
+                        Err(e) => println!("watch error: {:?}", e),
+                    }
+                    previous = now;
+                }
+            });
+
+            drop(handle);
 
             let web_state = web::Data::new(WebState {
                 sol: Mutex::new(None),
@@ -44,8 +73,10 @@ pub fn run() {
             );
 
             let dir = app.path().app_config_dir().unwrap();
-            let state = AppState::from_dir(dir).unwrap();
+            let mut state = AppState::from_dir(dir).unwrap();
+            state.watcher = Some(Arc::new(RwLock::new(watcher)));
             app.manage(Mutex::new(state));
+
             Ok(())
         })
         .plugin(tauri_plugin_dialog::init())

@@ -1,25 +1,18 @@
-use crate::config::Config;
-use crate::info::Problem;
-use crate::judge::Verdict;
-use crate::utils::*;
-use crate::Language;
-use crate::WINDOW;
+use crate::{config::Config, info::Problem, judge::Verdict, utils::ResultTrait, Language};
 use chrono::Local;
-use notify::{Event, RecursiveMode, Watcher};
+use notify::{FsEventWatcher, RecursiveMode, Watcher};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
-use std::fs::{create_dir_all, File};
-use std::io::{BufReader, Write};
-use std::ops::Deref;
-use std::path::PathBuf;
-use std::process::Command;
-use std::str::FromStr;
-use std::sync::mpsc;
-use std::sync::Mutex;
-use std::thread;
-use std::time;
-use std::time::Duration;
-use tauri::Emitter;
+use std::{
+    collections::HashMap,
+    fs::{create_dir_all, File},
+    io::{BufReader, Write},
+    ops::Deref,
+    path::PathBuf,
+    process::Command,
+    str::FromStr,
+    sync::{Arc, Mutex, RwLock},
+    time,
+};
 use tauri::{Manager, State};
 use wait_timeout::ChildExt;
 
@@ -34,14 +27,16 @@ const CREATE_NO_WINDOW: u32 = 0x08000000; // Prevents opening a new window
 pub struct AppState {
     pub directory: PathBuf,
     pub language_id: usize,
-    #[serde(default, skip_serializing)]
+    #[serde(default, skip)]
     pub config: Config,
-    #[serde(default, skip_serializing)]
+    #[serde(default, skip)]
     pub languages: HashMap<String, Language>,
-    #[serde(default, skip_serializing)]
+    #[serde(default, skip)]
     pub problem: Problem,
-    #[serde(default, skip_serializing)]
+    #[serde(default, skip)]
     pub verdicts: Vec<Verdict>,
+    #[serde(default, skip)]
+    pub watcher: Option<Arc<RwLock<FsEventWatcher>>>,
 }
 
 impl AppState {
@@ -142,68 +137,36 @@ pub async fn create_file(app_state: State<'_, Mutex<AppState>>) -> Result<(), St
         .get_file_path(&state.problem, &state.directory)?;
     create_dir_all(&file_path.parent().unwrap()).map_to_string()?;
 
+    if !file_path.exists() {
+        let mut f = File::create_new(&file_path).map_to_string()?;
+        let formatted_time = Local::now().format("%Y/%m/%d %H:%M"); // This is a Display object
+        f.write_fmt(format_args!(
+            "{} Created by {} at {}\n{} {}\n{}",
+            state.get_language()?.comment, // e.g., "//"
+            config.author,                 // e.g., "Ayush Biswas"
+            formatted_time,                // formatted as "2024/12/25 14:07"
+            state.get_language()?.comment, // e.g., "//"
+            state.problem.url,             // problem URL
+            config.get_template(&state.directory)
+        ))
+        .map_to_string()?;
+    }
+
     if config.toggle.run_on_save {
-        let (tx, rx) = mpsc::channel::<notify::Result<Event>>();
-        let mut watcher = notify::recommended_watcher(tx).map_to_string()?;
-
-        let window = WINDOW.get().expect("window-is-unavailable");
-        let file_path = file_path.clone();
-
-        let handle = thread::spawn(move || {
-            watcher
-                .watch(&file_path, RecursiveMode::NonRecursive)
-                .map_to_string()
-                .unwrap();
-
-            let mut previous = time::Instant::now();
-
-            for res in rx {
-                let now = time::Instant::now();
-                if now.duration_since(previous) < Duration::from_secs(1) {
-                    continue;
-                }
-                match res {
-                    Ok(_event) => window.emit("test", 0).unwrap(),
-                    Err(e) => println!("watch error: {:?}", e),
-                }
-                previous = now;
-            }
-        });
-
-        drop(handle);
+        let watcher = state.watcher.unwrap();
+        let mut watcher = watcher.write().unwrap();
+        watcher
+            .watch(&file_path, RecursiveMode::NonRecursive)
+            .map_to_string()
+            .unwrap();
     }
 
-    if file_path.exists() && !config.editor.is_empty() {
-        let mut cmd = Command::new(config.editor.clone())
-            .arg(&file_path)
-            .spawn()
-            .map_to_string()?;
-        cmd.wait_timeout(time::Duration::from_secs(1))
-            .map_to_string()?;
-        return Ok(());
-    }
-
-    let mut f = File::create_new(&file_path).map_to_string()?;
-    let formatted_time = Local::now().format("%Y/%m/%d %H:%M"); // This is a Display object
-    f.write_fmt(format_args!(
-        "{} Created by {} at {}\n{} {}\n{}",
-        state.get_language()?.comment, // e.g., "//"
-        config.author,                 // e.g., "Ayush Biswas"
-        formatted_time,                // formatted as "2024/12/25 14:07"
-        state.get_language()?.comment, // e.g., "//"
-        state.problem.url,             // problem URL
-        config.get_template(&state.directory)
-    ))
-    .map_to_string()?;
-
-    if !config.editor.is_empty() {
-        let mut cmd = Command::new(config.editor.clone())
-            .arg(&file_path)
-            .spawn()
-            .map_to_string()?;
-        cmd.wait_timeout(time::Duration::from_secs(1))
-            .map_to_string()?;
-    }
+    let mut cmd = Command::new(config.editor.clone())
+        .arg(&file_path)
+        .spawn()
+        .map_to_string()?;
+    cmd.wait_timeout(time::Duration::from_secs(1))
+        .map_to_string()?;
 
     Ok(())
 }

@@ -1,6 +1,6 @@
 {
   "productName": "cp-assist",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "identifier": "com.cpgawd.dev",
   "build": {
     "beforeDevCommand": "pnpm dev",

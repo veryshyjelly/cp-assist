@@ -12,7 +12,8 @@ import {
   get_verdicts,
   set_problem,
   set_verdicts,
-  run
+  run,
+  submit
 } from "./commands.tsx";
 
 function App() {
@@ -31,6 +32,9 @@ function App() {
         await run();
         setLoading(false);
       }
+    })
+    listen<number>("submit", async (event) => {
+      await submit();
     })
     listen<Problem>("set-problem", (event) =>
       set_problem(event.payload).then(() => setProblem(event.payload)),

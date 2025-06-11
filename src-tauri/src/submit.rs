@@ -84,7 +84,7 @@ pub async fn submit_solution(app_state: tauri::State<'_, Mutex<AppState>>) -> Re
 
     let post_request = client
         .post("http://localhost:27121/submit")
-        .body(serde_json::to_string(&solution).unwrap())
+        .json(&solution)
         .build()
         .map_to_string()?;
 

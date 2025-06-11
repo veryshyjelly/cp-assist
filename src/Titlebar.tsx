@@ -155,7 +155,7 @@ const TitleBar = ({
             className="rounded-md hover:bg-[#484b4d] cursor-pointer z-10"
             onClick={() => create_file()}
           >
-            <Image src="create_file.svg" h={22} />
+            <Image src="create_file.svg" h={24} fit="contain" />
           </Center>
 
           <Select
@@ -192,10 +192,10 @@ const TitleBar = ({
           className="hover:bg-[#484b4d]"
           onClick={() => appWindow.minimize()}
         >
-          <Image src="minimize.svg" />
+          <Image src="minimize.svg" fit="contain" h={22} />
         </Center>
         <Center h={40} w={36}>
-          <Image src="maximize.svg" />
+          <Image src="maximize.svg" fit="contain" h={22} />
         </Center>
         <Center
           h={40}
@@ -203,7 +203,7 @@ const TitleBar = ({
           className="hover:bg-[#e81123]"
           onClick={() => appWindow.close()}
         >
-          <Image src="close.svg" />
+          <Image src="close.svg" h={22} fit="contain" />
         </Center>
       </Flex>
     </Flex>
