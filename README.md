@@ -1,13 +1,13 @@
 > [!CAUTION]
-> **🚨 PROJECT DEPRECATED: Please use `cocom`!**
+> **🚨 PROJECT DEPRECATED: Please use `eitri`!**
 > 
 > I am **no longer maintaining this Tauri/React desktop application**, nor am I maintaining the manual usage and configuration instructions documented below. 
 > 
-> I have completely replaced `cp-assist` with **[cocom](https://github.com/veryshyjelly/cocom)** — a much faster, lightweight, and fully terminal-native Go TUI companion tool that does everything this app does (parsing, sandboxed compilation, linking) but runs directly in your terminal without desktop app overhead.
+> I have completely replaced `cp-assist` with **[eitri](https://github.com/veryshyjelly/eitri)** — a much faster, lightweight, and fully terminal-native Go TUI companion tool that does everything this app does (parsing, sandboxed compilation, linking) but runs directly in your terminal without desktop app overhead.
 > 
-> The information below is kept only as an archive of my older workflow. For my current, actively maintained workflow tool, please head over to the **[`cocom` repository](https://github.com/veryshyjelly/cocom)**.
+> The information below is kept only as an archive of my older workflow. For my current, actively maintained workflow tool, please head over to the **[`eitri` repository](https://github.com/veryshyjelly/eitri)**.
 
-![Status: Archived](https://img.shields.io/badge/status-deprecated-red?style=for-the-badge) ![Successor: cocom](https://img.shields.io/badge/successor-cocom-blue?style=for-the-badge)
+![Status: Archived](https://img.shields.io/badge/status-deprecated-red?style=for-the-badge) ![Successor: eitri](https://img.shields.io/badge/successor-eitri-blue?style=for-the-badge)
 
 ---
 
